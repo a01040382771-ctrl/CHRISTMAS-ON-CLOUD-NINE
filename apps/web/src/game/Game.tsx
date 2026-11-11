@@ -10,6 +10,7 @@ import { Snow } from "./world/Snow";
 import { input, installCameraControls, installKeyboard } from "./controls/input";
 import { localPlayer, snowTarget } from "./state";
 import { treeFade } from "./controls/cameraRig";
+import { projectTags } from "./nametags";
 import { net } from "../net/client";
 import { useUi as useUiStore } from "../state/store";
 
@@ -25,6 +26,12 @@ function OrbitCamera() {
     camera.lookAt(6, 4.5, 0);
     snowTarget.current.set(camera.position.x, 0, camera.position.z);
   });
+  return null;
+}
+
+/** Positions the DOM nickname labels after the camera has moved this frame. */
+function TagProjector() {
+  useFrame(({ camera, size }) => projectTags(camera, size.width, size.height));
   return null;
 }
 
@@ -83,6 +90,7 @@ export function Game() {
             <OrbitCamera />
           )}
           <Snow count={q.snowParticles} target={snowTarget} />
+          <TagProjector />
           <DebugProbe />
         </Suspense>
       </Canvas>

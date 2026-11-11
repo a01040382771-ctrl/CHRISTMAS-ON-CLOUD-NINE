@@ -6,6 +6,7 @@ export default function App() {
   return (
     <>
       <Game />
+      <div id="nametag-layer" />
       <EntryScreen />
       <Hud />
     </>

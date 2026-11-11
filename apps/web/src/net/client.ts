@@ -42,7 +42,8 @@ class Net {
     const env = import.meta.env.VITE_SERVER_URL as string | undefined;
     if (env) return env;
     const proto = location.protocol === "https:" ? "wss" : "ws";
-    return `${proto}://${location.hostname}:2567`;
+    // dev: Vite (5173) + game server (2567). Production build: the server also serves the site → same origin.
+    return import.meta.env.DEV ? `${proto}://${location.hostname}:2567` : `${proto}://${location.host}`;
   }
 
   async join(opts: JoinOptions, inviteRoomId?: string | null) {

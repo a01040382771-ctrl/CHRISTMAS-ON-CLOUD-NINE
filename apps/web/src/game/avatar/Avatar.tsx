@@ -1,9 +1,9 @@
-import { memo, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { AVATAR_COLORS } from "@sky/shared";
 import { Batch } from "../world/Batch";
+import { addTag } from "../nametags";
 
 /**
  * Avatar look. Everything cosmetic lives in this spec so hair, outfits and
@@ -74,6 +74,8 @@ export const AvatarModel = memo(function AvatarModel({ spec, anim, name, self = 
   const armL = useRef<THREE.Group>(null);
   const armR = useRef<THREE.Group>(null);
   const pom = useRef<THREE.Mesh>(null);
+  const tagAnchor = useRef<THREE.Object3D>(null);
+  useEffect(() => (tagAnchor.current ? addTag(name, self, tagAnchor.current) : undefined), [name, self]);
   const phase = useRef(Math.random() * 6);
   const amp = useRef(0);
 
@@ -151,9 +153,7 @@ export const AvatarModel = memo(function AvatarModel({ spec, anim, name, self = 
         </group>
       </group>
       {/* nickname */}
-      <Html position={[0, 1.95, 0]} center zIndexRange={[20, 0]} style={{ pointerEvents: "none" }}>
-        <div className={`nametag${self ? " self" : ""}`}>{name}</div>
-      </Html>
+      <object3D ref={tagAnchor} position={[0, 1.95, 0]} />
     </group>
   );
 });
