@@ -61,6 +61,35 @@ export function makePlankTile() {
   });
 }
 
+/**
+ * Scalloped roof shingles, rows running along the texture's U axis. Roofs built by extrusion use
+ * slope distance for U and ridge distance for V, so materials rotate this by 90°.
+ */
+export function makeShingleTile(base: string, edge: string, light: string) {
+  return canvasTexture(128, (ctx, s) => {
+    ctx.fillStyle = edge;
+    ctx.fillRect(0, 0, s, s);
+    const r = s / 4;
+    for (let row = -1; row < 5; row++) {
+      for (let col = -1; col < 3; col++) {
+        const cx = col * (s / 2) + (row % 2 === 0 ? 0 : s / 4) + s / 4;
+        const cy = row * (s / 4);
+        const g = ctx.createLinearGradient(0, cy - r, 0, cy + r);
+        g.addColorStop(0, light);
+        g.addColorStop(0.75, base);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(cx - r + 3, cy - r);
+        ctx.lineTo(cx + r - 3, cy - r);
+        ctx.lineTo(cx + r - 3, cy);
+        ctx.arc(cx, cy, r - 3, 0, Math.PI, false);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+  });
+}
+
 /** Radial falloff used by additive light halos. */
 export function makeHaloTexture() {
   const tex = canvasTexture(128, (ctx, s) => {

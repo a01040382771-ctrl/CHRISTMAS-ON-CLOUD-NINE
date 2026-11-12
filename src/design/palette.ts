@@ -31,6 +31,8 @@ export const palette = {
   // Champagne Gold — lights and ornaments
   champagne: "#f3d9a4",
   gold: "#e3b862",
+  /** Drainpipes and spire caps. */
+  copper: "#b9744f",
   glow: "#ffd58a",
   // Supporting neutrals (stone, rock, wood) tuned to sit inside the pastel range
   stone: "#e2d2c3",

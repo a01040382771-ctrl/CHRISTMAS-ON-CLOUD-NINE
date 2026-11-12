@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { palette } from "./palette";
-import { makeHaloTexture, makePlankTile, makeStoneTile } from "./textures";
+import { makeHaloTexture, makePlankTile, makeShingleTile, makeStoneTile } from "./textures";
 
 /**
  * Shared material library. Every mesh in the world uses one of these instances, so a tweak here
@@ -13,9 +13,14 @@ const matte = (color: string, extra: THREE.MeshStandardMaterialParameters = {}) 
 const stoneTile = makeStoneTile();
 const plankTile = makePlankTile();
 
+const shingleTile = makeShingleTile(palette.rose, "#b86a76", palette.blush);
+shingleTile.rotation = Math.PI / 2;
+shingleTile.repeat.set(1.6, 1.6);
+
 export const textures = {
   stoneTile,
   plankTile,
+  shingleTile,
   halo: makeHaloTexture(),
 };
 
@@ -38,12 +43,15 @@ export const materials = {
   roofSage: matte(palette.sage),
   roofSageDeep: matte(palette.sageDeep),
   roofBurgundy: matte(palette.burgundy),
+  /** Scalloped pink tiles (Velvet Ballroom). */
+  roofShingle: matte("#ffffff", { map: shingleTile }),
   trim: matte(palette.burgundy),
   trimDeep: matte(palette.burgundyDeep),
   wood: matte(palette.wood),
   woodDeep: matte(palette.woodDeep),
   planks: matte("#ffffff", { map: plankTile, vertexColors: true }),
   gold: new THREE.MeshStandardMaterial({ color: palette.gold, roughness: 0.38, metalness: 0.55 }),
+  copper: new THREE.MeshStandardMaterial({ color: palette.copper, roughness: 0.45, metalness: 0.45 }),
   // light
   windowGlow: new THREE.MeshStandardMaterial({ color: palette.champagne, emissive: palette.glow, emissiveIntensity: 1.35, roughness: 0.6 }),
   lampGlow: new THREE.MeshStandardMaterial({ color: "#fff3d6", emissive: palette.glow, emissiveIntensity: 2.2, roughness: 0.5 }),

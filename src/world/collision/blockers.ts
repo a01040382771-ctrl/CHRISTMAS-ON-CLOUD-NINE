@@ -24,8 +24,14 @@ const gazeboColumns = Array.from({ length: 8 }, (_, i) => {
 export const zoneBlockers: Record<Exclude<ZoneId, "starlight-plaza">, (lot: LotDef) => LocalBlocker[]> = {
   // hall (+ plinth), entrance porch, corner tower
   "invitation-house": () => [box(1.2, -0.6, 7.3, 5.9, 7.7), box(0, 2.5, 3.1, 1.7, 4.7), cyl(-3.3, 0.9, 2.2, 11.8)],
-  // hall, entrance rotunda, two wing towers
-  "velvet-ballroom": () => [box(0, -1, 12.3, 6.5, 10.3), cyl(0, 1.7, 2.9, 11.6), cyl(-7.4, 0.2, 2.3, 12.4), cyl(7.4, 0.2, 2.3, 12.4)],
+  // centre hall, west wing + porch, east wing, north-east turret; the two front steps are walkable,
+  // the potted firs beside them are small obstacles
+  "velvet-ballroom": () => [
+    box(0, -0.3, 6.7, 7.3, 10.6), box(-5.7, -0.4, 5.3, 5.9, 5.6), box(-5.8, 3.3, 5.0, 1.9, 3.6),
+    box(5.8, -0.6, 5.5, 5.9, 8.2), cyl(3.3, -3.45, 1.35, 15),
+    box(0, 3.8, 2.7, 0.9, 0.38, "terrain"), box(0, 4.5, 3.2, 0.6, 0.16, "terrain"),
+    cyl(-1.95, 4.05, 0.4, 1.6, "prop"), cyl(1.95, 4.05, 0.4, 1.6, "prop"),
+  ],
   // glasshouse on its low wall
   "photo-garden": () => [box(0, 0, 6.7, 11.7, 5.9)],
   // stone ring and trunk of the wishing tree

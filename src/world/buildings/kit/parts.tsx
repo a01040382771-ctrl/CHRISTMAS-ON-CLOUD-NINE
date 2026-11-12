@@ -89,10 +89,18 @@ export function Finial({ position = [0, 0, 0], size = 1 }: { position?: V3; size
  * Swooping gable roof. The ridge runs along local x; `width` is the wall length under the ridge,
  * `depth` the wall depth it spans. Includes the snow blanket on the upper slopes.
  */
-export function GableRoof({ width, depth, height, position = [0, 0, 0], rotationY = 0, roof = "roofPink", overhang = 0.55, snowFrom = 0.24 }: {
+export function GableRoof({ width, depth, height, position = [0, 0, 0], rotationY = 0, roof = "roofPink", overhang = 0.55, snowFrom = 0.24, snowDepth = 0.2, snowLip = false, shell, rakeSnow = false }: {
   width: number; depth: number; height: number; position?: V3; rotationY?: number; roof?: MaterialName; overhang?: number;
   /** Where the snow starts on the slope: 0 = eave, 1 = ridge. */
   snowFrom?: number;
+  /** Thickness of the snow blanket. */
+  snowDepth?: number;
+  /** A soft roll of snow drooping over both eaves. */
+  snowLip?: boolean;
+  /** Build the roof as a curved slab this thick (open gable ends showing the wall below) instead of a solid prism. */
+  shell?: number;
+  /** Snow heaped along both gable rakes. */
+  rakeSnow?: boolean;
 }) {
   const geo = useMemo(() => {
     const a = depth / 2 + overhang;
@@ -105,8 +113,16 @@ export function GableRoof({ width, depth, height, position = [0, 0, 0], rotation
     body.moveTo(-a, 0);
     body.quadraticCurveTo(ctrl.x, ctrl.y, 0, height);
     body.quadraticCurveTo(-ctrl.x, ctrl.y, a, 0);
-    body.lineTo(a - 0.3, -0.18);
-    body.lineTo(-a + 0.3, -0.18);
+    if (shell) {
+      // back along the underside, `shell` below the top surface: right eave → apex → left eave
+      const under: THREE.Vector2[] = [];
+      for (let i = 0; i <= 16; i++) under.push(slope(i / 16).add(new THREE.Vector2(0, -shell)));
+      under.forEach((p) => body.lineTo(-p.x, p.y));
+      under.slice().reverse().slice(1).forEach((p) => body.lineTo(p.x, p.y));
+    } else {
+      body.lineTo(a - 0.3, -0.18);
+      body.lineTo(-a + 0.3, -0.18);
+    }
     body.closePath();
 
     // snow lies on the upper part of both slopes
@@ -116,7 +132,7 @@ export function GableRoof({ width, depth, height, position = [0, 0, 0], rotation
       const p = slope(s), q = slope(Math.min(1, s + 0.02));
       const n = new THREE.Vector2(-(q.y - p.y), q.x - p.x).normalize();
       if (i === 10) n.set(0, 1);
-      outer.push(p.clone().addScaledVector(n, 0.2 - 0.04 * (i / 10)));
+      outer.push(p.clone().addScaledVector(n, snowDepth * (1 - 0.2 * (i / 10))));
       inner.push(p.clone().addScaledVector(n, -0.03));
     }
     // closed outline: up the left slope's snow surface, down the right, then back underneath
@@ -135,14 +151,81 @@ export function GableRoof({ width, depth, height, position = [0, 0, 0], rotation
       g.rotateY(Math.PI / 2);
       return g;
     };
-    return { body: extrude(body, len), snow: extrude(snow, len + 0.16) };
-  }, [width, depth, height, overhang, snowFrom]);
+    // eave rolls sit where the blanket starts (shape x maps to -z after the rotation above)
+    const lipAt = slope(snowFrom);
+    const lip = snowLip ? new THREE.CapsuleGeometry(snowDepth * 0.75, len - snowDepth, 6, 12).rotateZ(Math.PI / 2) : null;
+    // heaps of snow along both rakes (geometry above maps shape (x, y) at extrusion e to (e, y, -x))
+    const heaps: { p: V3; r: number }[] = [];
+    const rakes: THREE.BufferGeometry[] = [];
+    if (rakeSnow) {
+      for (const end of [-1, 1]) {
+        const x = end * (len / 2 - snowDepth * 0.3);
+        // one continuous rounded bead over the whole rake, eave to eave
+        const pts: THREE.Vector3[] = [];
+        for (let i = 0; i <= 24; i++) {
+          const t = i / 24, side = t < 0.5 ? 1 : -1, s = snowFrom + (1 - snowFrom) * (t < 0.5 ? t * 2 : (1 - t) * 2);
+          const p = slope(s);
+          pts.push(new THREE.Vector3(x, p.y + snowDepth * 0.45, side * p.x));
+        }
+        rakes.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, snowDepth * 0.62, 10));
+        // a few soft heaps along it
+        for (const side of [-1, 1]) for (let i = 0; i < 4; i++) {
+          const p = slope(snowFrom + (1 - snowFrom) * ((i + 0.4) / 4.4));
+          heaps.push({ p: [x, p.y + snowDepth * 0.6, side * p.x], r: snowDepth * (0.78 + 0.12 * ((i + side + 2) % 3)) });
+        }
+      }
+    }
+    return { body: extrude(body, len), snow: extrude(snow, len + 0.16), lip, lipAt, heaps, rakes };
+  }, [width, depth, height, overhang, snowFrom, snowDepth, snowLip, shell, rakeSnow]);
   return (
     <group position={position} rotation={[0, rotationY, 0]}>
       <mesh geometry={geo.body} material={mat(roof)} castShadow receiveShadow />
       <mesh geometry={geo.snow} material={materials.snow} castShadow />
+      {geo.lip && [-1, 1].map((s) => (
+        <mesh key={s} geometry={geo.lip!} material={materials.snow} position={[0, geo.lipAt.y + snowDepth * 0.2, s * -geo.lipAt.x]} castShadow />
+      ))}
+      {geo.rakes.map((g, i) => <mesh key={`r${i}`} geometry={g} material={materials.snow} castShadow />)}
+      {geo.heaps.map((h, i) => <mesh key={i} position={h.p} scale={[0.9, 0.62, 1.25]} material={materials.snow} castShadow><sphereGeometry args={[h.r, 12, 9]} /></mesh>)}
     </group>
   );
+}
+
+/** Height of a GableRoof's underside profile at distance `x` from its ridge (same curve as GableRoof). */
+export function gableProfileY(span: number, height: number, overhang: number, x: number) {
+  const a = span / 2 + overhang;
+  let lo = 0, hi = 1;
+  // x(s) runs from -a (s=0) to 0 (s=1) monotonically: bisect for the given |x|
+  for (let i = 0; i < 40; i++) {
+    const s = (lo + hi) / 2, u = 1 - s;
+    const px = u * u * -a + 2 * u * s * (-a * 0.42);
+    if (px < -Math.abs(x)) lo = s; else hi = s;
+  }
+  const s = (lo + hi) / 2, u = 1 - s;
+  return 2 * u * s * height * 0.4 + s * s * height;
+}
+
+/**
+ * Wall that fills the triangle under a GableRoof's end so the gable reads as solid masonry.
+ * Drawn facing local +z with its outer face at z = 0; `span` is the wall width under the roof.
+ */
+export function GableEnd({ span, height, overhang = 0.55, position = [0, 0, 0], rotationY = 0, wall = "wallIvory", thickness = 0.3 }: {
+  span: number; height: number; overhang?: number; position?: V3; rotationY?: number; wall?: MaterialName; thickness?: number;
+}) {
+  const geo = useMemo(() => {
+    const shape = new THREE.Shape();
+    const half = span / 2, n = 24;
+    shape.moveTo(-half, -0.05);
+    for (let i = 0; i <= n; i++) {
+      const x = -half + (i / n) * span;
+      shape.lineTo(x, Math.max(0, gableProfileY(span, height, overhang, x) - 0.16));
+    }
+    shape.lineTo(half, -0.05);
+    shape.closePath();
+    const g = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false });
+    g.translate(0, 0, -thickness);
+    return g;
+  }, [span, height, overhang, thickness]);
+  return <mesh geometry={geo} material={mat(wall)} position={position} rotation={[0, rotationY, 0]} castShadow receiveShadow />;
 }
 
 /** Dome with a snow cap; `squash` < 1 flattens it, > 1 makes an onion-ish cupola. */
