@@ -26,6 +26,8 @@ export const palette = {
   // Burgundy — ribbons and Christmas trim
   burgundy: "#8f2f47",
   burgundyDeep: "#6e2238",
+  /** Raspberry between rose and burgundy — the default avatar coat, readable against pink walls and snow. */
+  berry: "#c4566f",
   // Champagne Gold — lights and ornaments
   champagne: "#f3d9a4",
   gold: "#e3b862",

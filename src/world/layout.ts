@@ -354,7 +354,7 @@ export const lots: LotDef[] = [
   { id: "photo-garden", zone: "photo-garden", island: "garden", center: add(g, [-3, 0.2]), rotation: Math.PI / 2, shape: "rect", size: [8, 13] },
   { id: "wish-tree", zone: "wish-forest", island: "forest", center: add(f, [1.5, -1.5]), rotation: 0, shape: "round", size: [2.6, 2.6] },
   ...stallLots,
-  { id: "moonlit-gazebo", zone: "moonlit-terrace", island: "terrace", center: add(t, [4.2, 0]), rotation: -Math.PI / 2, shape: "round", size: [6, 6] },
+  { id: "moonlit-gazebo", zone: "moonlit-terrace", island: "terrace", center: add(t, [3.6, 0]), rotation: -Math.PI / 2, shape: "round", size: [7, 7] },
 ];
 
 export const lotsOf = (zone: ZoneId) => lots.filter((l) => l.zone === zone);

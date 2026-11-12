@@ -12,7 +12,7 @@ const COLUMNS = 8, RING = 2.35, HEIGHT = 3.2;
 export function MoonlitTerrace({ lots }: { lots: LotDef[] }) {
   return (
     <BuildingSite lot={lots[0]}>
-      <mesh position={[0, 0.12, 0]} material={materials.stone} receiveShadow castShadow><cylinderGeometry args={[2.75, 2.85, 0.24, 40]} /></mesh>
+      <mesh name="step" position={[0, 0.12, 0]} material={materials.stone} receiveShadow castShadow><cylinderGeometry args={[2.75, 2.85, 0.24, 40]} /></mesh>
       {Array.from({ length: COLUMNS }, (_, i) => {
         const a = ((i + 0.5) / COLUMNS) * Math.PI * 2;
         return <mesh key={i} position={[Math.cos(a) * RING, 0.24 + HEIGHT / 2, Math.sin(a) * RING]} material={materials.wallIvory} castShadow><cylinderGeometry args={[0.15, 0.18, HEIGHT, 12]} /></mesh>;

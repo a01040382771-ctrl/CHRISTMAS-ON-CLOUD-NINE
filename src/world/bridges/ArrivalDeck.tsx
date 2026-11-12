@@ -51,7 +51,7 @@ export function ArrivalDeck({ dock }: { dock: DockDef }) {
 
   return (
     <group name={`dock:${dock.id}`} position={[frame.center[0], frame.y, frame.center[1]]} rotation={[0, frame.rotation, 0]}>
-      <mesh geometry={parts.deck} material={materials.planks} receiveShadow castShadow />
+      <mesh name="deck" geometry={parts.deck} material={materials.planks} receiveShadow castShadow />
       <mesh position={[0, -0.2, 0]} material={materials.woodDeep} castShadow>
         <boxGeometry args={[frame.width + 0.1, 0.36, frame.length]} />
       </mesh>

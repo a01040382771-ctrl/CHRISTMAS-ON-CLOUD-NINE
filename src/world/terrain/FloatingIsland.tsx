@@ -8,7 +8,7 @@ export function FloatingIsland({ def }: { def: IslandDef }) {
   const geo = useMemo(() => ({ snow: buildSnowGeometry(def), rim: buildRimGeometry(def), rock: buildRockGeometry(def) }), [def]);
   return (
     <group name={`island:${def.id}`}>
-      <mesh geometry={geo.snow} material={materials.snow} receiveShadow castShadow />
+      <mesh name="snow" geometry={geo.snow} material={materials.snow} receiveShadow castShadow />
       <mesh geometry={geo.rim} material={materials.stoneBlocks} receiveShadow />
       <mesh geometry={geo.rock} material={materials.rock} receiveShadow castShadow />
     </group>

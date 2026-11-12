@@ -3,10 +3,11 @@ import * as THREE from "three";
 import { materials } from "../../design";
 import { Halos } from "../common/Halos";
 import { InstancedSet, placeMatrix } from "../common/InstancedSet";
+import { LAMP_HEIGHT_M as LAMP_HEIGHT } from "./lampSpec";
 
 export interface LampSpot { x: number; y: number; z: number }
 
-export const LAMP_HEIGHT = 3.4;
+export { LAMP_HEIGHT };
 
 const base = new THREE.CylinderGeometry(0.17, 0.24, 0.45, 12).translate(0, 0.225, 0);
 const pole = new THREE.CylinderGeometry(0.06, 0.08, LAMP_HEIGHT - 0.5, 10).translate(0, (LAMP_HEIGHT - 0.5) / 2 + 0.2, 0);

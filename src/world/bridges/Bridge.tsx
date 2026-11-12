@@ -1,34 +1,13 @@
 import { useMemo } from "react";
 import * as THREE from "three";
-import { materials, palette, scale } from "../../design";
+import { materials, scale } from "../../design";
 import { InstancedSet, placeMatrix, spanMatrix } from "../common/InstancedSet";
 import { bridgePoint, RAIL_INSET, type Bridge as BridgeData } from "../layout";
+import { bridgeCentreLine, bridgeSide, bridgeSteps, buildDeckGeometry } from "./bridgeGeometry";
 
 const post = new THREE.CylinderGeometry(0.085, 0.1, 1, 10).translate(0, 0.5, 0);
 const cap = new THREE.SphereGeometry(0.15, 12, 10);
 const strut = new THREE.CylinderGeometry(0.06, 0.06, 1, 8);
-
-/** Timber deck: one quad per plank so each board gets its own tint. */
-function plankDeck(pts: THREE.Vector3[], side: THREE.Vector3, width: number) {
-  const pos: number[] = [], uv: number[] = [], col: number[] = [];
-  const base = new THREE.Color(palette.wood), alt = new THREE.Color(palette.rose), c = new THREE.Color();
-  const h = width / 2;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const a = pts[i], b = pts[i + 1];
-    const al = [a.x - side.x * h, a.y, a.z - side.z * h], ar = [a.x + side.x * h, a.y, a.z + side.z * h];
-    const bl = [b.x - side.x * h, b.y, b.z - side.z * h], br = [b.x + side.x * h, b.y, b.z + side.z * h];
-    pos.push(...ar, ...br, ...al, ...al, ...br, ...bl);
-    uv.push(0, 0, 0, 1, 2.5, 0, 2.5, 0, 0, 1, 2.5, 1);
-    c.copy(base).lerp(alt, ((i * 37) % 11) / 30).multiplyScalar(0.92 + ((i * 53) % 7) / 60);
-    for (let k = 0; k < 6; k++) col.push(c.r, c.g, c.b);
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-  geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
-  geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
-  geo.computeVertexNormals();
-  return geo;
-}
 
 /** Solid beam under the deck (left face, underside, right face). */
 function deckBeam(pts: THREE.Vector3[], side: THREE.Vector3, width: number, depth: number) {
@@ -57,10 +36,9 @@ function deckBeam(pts: THREE.Vector3[], side: THREE.Vector3, width: number, dept
  */
 export function Bridge({ bridge }: { bridge: BridgeData }) {
   const parts = useMemo(() => {
-    const steps = Math.max(8, Math.round(bridge.length / 0.46));
-    const pts = Array.from({ length: steps + 1 }, (_, i) => new THREE.Vector3(...bridgePoint(bridge, i / steps)));
-    const dir = new THREE.Vector3(bridge.end[0] - bridge.start[0], 0, bridge.end[2] - bridge.start[2]).normalize();
-    const side = new THREE.Vector3(-dir.z, 0, dir.x);
+    const steps = bridgeSteps(bridge);
+    const pts = bridgeCentreLine(bridge);
+    const side = bridgeSide(bridge);
     const half = bridge.width / 2;
 
     const rail = (offset: number, height: number, radius: number) => {
@@ -93,7 +71,7 @@ export function Bridge({ bridge }: { bridge: BridgeData }) {
       }
     }
     return {
-      deck: plankDeck(pts, side, bridge.width),
+      deck: buildDeckGeometry(bridge),
       beam: deckBeam(pts, side, bridge.width + 0.1, 0.34),
       rails: [half - RAIL_INSET, -(half - RAIL_INSET)].flatMap((o) => [rail(o, scale.railingHeight, 0.075), rail(o, 0.55, 0.045)]),
       arches: [arch(half - 0.25), arch(-(half - 0.25))],
@@ -103,7 +81,7 @@ export function Bridge({ bridge }: { bridge: BridgeData }) {
 
   return (
     <group name={`bridge:${bridge.id}`}>
-      <mesh geometry={parts.deck} material={materials.planks} receiveShadow castShadow />
+      <mesh name="deck" geometry={parts.deck} material={materials.planks} receiveShadow castShadow />
       <mesh geometry={parts.beam} material={materials.woodDeep} castShadow />
       {parts.rails.map((g, i) => <mesh key={i} geometry={g} material={materials.trim} castShadow />)}
       {parts.arches.map((g, i) => <mesh key={i} geometry={g} material={materials.woodDeep} castShadow />)}

@@ -12,13 +12,14 @@ export const zoneLabelId = (zone: string) => `zone-label-${zone}`;
  * Keeps the HTML zone tags (rendered by ui/Overlay) pinned to their zones: projects each anchor
  * to the screen every frame and moves the matching DOM element.
  */
-export function ZoneLabelProjector() {
+export function ZoneLabelProjector({ maxDistance = Infinity }: { maxDistance?: number }) {
   useFrame(({ camera, size }) => {
     for (const a of anchors) {
       const el = document.getElementById(zoneLabelId(a.id));
       if (!el) continue;
+      const far = a.position.distanceTo(camera.position) > maxDistance;
       v.copy(a.position).project(camera);
-      const visible = v.z < 1 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1;
+      const visible = !far && v.z < 1 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1;
       el.style.opacity = visible ? "1" : "0";
       el.style.transform = `translate(-50%, -50%) translate(${((v.x + 1) / 2) * size.width}px, ${((1 - v.y) / 2) * size.height}px)`;
     }

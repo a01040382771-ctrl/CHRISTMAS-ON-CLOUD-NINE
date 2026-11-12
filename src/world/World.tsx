@@ -15,13 +15,18 @@ import { ZoneLabelProjector } from "./props/ZoneLabels";
 import { FloatingIsland } from "./terrain/FloatingIsland";
 import { Walkways } from "./terrain/Walkways";
 
-interface Props { showLabels: boolean; showScale: boolean }
+interface Props {
+  showLabels: boolean;
+  showScale: boolean;
+  /** Hide zone tags further than this (explore mode keeps only nearby ones). */
+  labelDistance?: number;
+}
 
 /**
  * The whole sky village, assembled from the layout:
  * environment → islands → walkways → bridges → zones → shared props.
  */
-export function World({ showLabels, showScale }: Props) {
+export function World({ showLabels, showScale, labelDistance }: Props) {
   return (
     <>
       <Sky />
@@ -42,7 +47,7 @@ export function World({ showLabels, showScale }: Props) {
       <Pines spots={treeSpots} />
       <LampPosts spots={lampSpots} />
 
-      {showLabels && <ZoneLabelProjector />}
+      {showLabels && <ZoneLabelProjector maxDistance={labelDistance} />}
       {showScale && <ScaleFigures />}
     </>
   );

@@ -19,7 +19,7 @@ const toPosition = (v: CameraView, out: THREE.Vector3) => {
  * fingers), all within limits. Setting `view` glides the camera to that framing; any manual input
  * cancels the glide.
  */
-export function ReviewCamera({ view }: { view: CameraView }) {
+export function ReviewCamera({ view, startTarget }: { view: CameraView; startTarget?: [number, number, number] }) {
   const controls = useRef<OrbitControlsImpl>(null);
   const camera = useThree((s) => s.camera);
   const glide = useRef<{ target: THREE.Vector3; position: THREE.Vector3 } | null>(null);
@@ -29,10 +29,18 @@ export function ReviewCamera({ view }: { view: CameraView }) {
     const goal = { target: new THREE.Vector3(...view.target), position: toPosition(view, new THREE.Vector3()) };
     if (first.current && controls.current) {
       first.current = false;
+      if (startTarget) {
+        // coming back from exploring: keep the current camera and glide out to the view
+        controls.current.target.set(...startTarget);
+        controls.current.update();
+        glide.current = goal;
+        return;
+      }
       camera.position.copy(goal.position);
       controls.current.target.copy(goal.target);
       controls.current.update();
     } else glide.current = goal;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, camera]);
 
   useFrame((_, dt) => {

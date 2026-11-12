@@ -1,12 +1,12 @@
 # 🎄 THE CHRISTMAS AFTERPARTY: SKY VILLAGE
 
 구름 위에 떠 있는 동화 같은 크리스마스 마을 — 3D 인터랙티브 웹 월드.
-지금은 **시각 디자인과 환경 제작 단계**이며, 이 저장소는 그 첫 단계인
-**Phase 1 — World Layout & Design System** 까지 구현되어 있습니다.
+현재 **Phase 1 — World Layout & Design System** 과
+**Phase 2 — Avatar Movement, Third-Person Camera & Collision** 까지 구현되어 있습니다.
 
 | | |
 |---|---|
-| 스택 | React 19 · TypeScript · Vite 7 · three.js · React Three Fiber 9 · drei |
+| 스택 | React 19 · TypeScript · Vite 7 · three.js · React Three Fiber 9 · drei · Rapier (`@react-three/rapier`) |
 | 모델링 | 전부 코드 기반 프로시저럴 (이미지·모델 파일 없음, 외부 네트워크 요청 없음) |
 | 단위 | 1 unit = 1 m · +x 동쪽 · +z 남쪽(기본 카메라 방향) · +y 위 |
 
@@ -27,16 +27,30 @@ npm run dev
 | `npm run dev` | 개발 서버 |
 | `npm run build` | 타입 검사 + 프로덕션 빌드 (`dist/`) |
 | `npm run preview` | 빌드 결과 미리보기 |
-| `npm test` | 월드 레이아웃 검증 테스트 |
+| `npm test` | 레이아웃 검증 + 실제 Rapier 캐릭터로 월드를 걸어 보는 헤드리스 물리 테스트 |
+| `npm run test:e2e` | 브라우저 E2E (개발 서버 실행 중일 때) — 키보드·마우스·충돌·다리·추락 복귀·지면 일치·모바일 터치 |
 | `npm run typecheck` | 타입 검사만 |
 
-### 조작 (디자인 검토용 카메라)
+### 두 가지 모드
 
-- **회전** 마우스 드래그 / 한 손가락 드래그
-- **확대·축소** 휠 / 핀치
-- **이동** 우클릭 드래그 / 두 손가락 드래그
-- 오른쪽 목록에서 구역을 누르면 해당 구역으로 카메라가 이동합니다. 그 상태에서 돌려 보면 정면·측면·후면을 확인할 수 있습니다.
-- **구역 라벨** 이름표 표시 · **아바타 스케일** 1.7 m 기준 인형 표시(문·길·다리 비율 확인용)
+**월드 감상 모드** (기본) — 마을 전체를 둘러보는 검토용 카메라
+- 회전: 마우스 드래그 / 한 손가락 · 확대·축소: 휠 / 핀치 · 이동: 우클릭 드래그 / 두 손가락
+- 오른쪽 목록에서 구역을 누르면 해당 구역으로 카메라가 이동합니다.
+- **구역 라벨** 이름표 · **아바타 스케일** 1.7 m 기준 인형
+
+**탐험 모드** — `탐험 시작` 버튼. 아바타가 중앙 광장 시작 지점에서 출발합니다.
+
+| | PC | 모바일 |
+|---|---|---|
+| 이동 | `W A S D` / 방향키 (카메라 기준) | 왼쪽 아래 조이스틱 |
+| 달리기 | `Shift` | 조이스틱을 끝까지 밀기 |
+| 시점 회전 | 마우스 드래그 | 화면 드래그 (조이스틱과 동시에 가능) |
+| 카메라 거리 | 마우스 휠 | 두 손가락 핀치 |
+| 시작 위치로 | `R` / 버튼 | 버튼 |
+| 돌아가기 | `월드 감상으로` 버튼 · 구역 목록 클릭 | 같음 |
+
+- URL에 `?debug` 를 붙이면 모든 충돌체가 선으로 표시됩니다(보이는 지형과 충돌 지형 비교용).
+- `?touch` 를 붙이면 PC에서도 모바일 조이스틱 UI를 볼 수 있습니다.
 
 ## 월드 구성
 
@@ -78,9 +92,26 @@ src/
     environment/            하늘, 구름, 조명, 나무 배치 규칙
     props/                  울타리, 가로등, 소나무, 구역 라벨, 스케일 인형
     common/                 인스턴싱·글로우·노이즈·GLB 로더 래퍼
-  camera/                 검토용 카메라와 시점 프리셋
-  ui/                     오버레이 UI
+    collision/
+      shapes.ts               엔진 독립 충돌 형상 타입·그룹 (서버와 공유 가능한 순수 데이터)
+      buildCollision.ts       레이아웃 → 충돌 월드 (눈·포장·다리 상판은 화면과 같은 삼각형 사용)
+      blockers.ts             건물별 충돌 볼륨 (건물 파일과 짝)
+  physics/                Rapier 런타임 (React 비의존: 테스트·향후 서버에서 재사용)
+    CharacterMotor.ts         캡슐 캐릭터 + 계단 보조 + 지면 스냅
+    staticColliders.ts        충돌 형상 → Rapier 콜라이더
+    PhysicsLayer.tsx          <Physics> + 정적 콜라이더 등록
+  player/                 아바타와 조작 (역할별 분리)
+    state.ts                  캐릭터 상태 + 네트워크용 PlayerSnapshot
+    movement.ts               이동 규칙 (카메라 기준 방향·가감속·회전·애니 상태, 고정 60 Hz)
+    input.ts                  키보드·조이스틱·시점 입력 상태
+    localPlayer.ts            이 브라우저의 플레이어
+    PlayerController.tsx      입력 → 이동 → 물리 → 상태 → 아바타 배치
+    avatar/                   외형(appearance)·모델(ProceduralAvatar)·애니메이션(animation)
+  camera/                 월드 감상 카메라(ReviewCamera) · 3인칭 카메라(ThirdPersonCamera) · 시점 프리셋
+  ui/                     오버레이 UI · 조이스틱
 tests/layout.test.ts      레이아웃 검증
+tests/physics.test.ts     실제 Rapier 캐릭터로 경로·다리·벽·절벽·계단을 걸어 보는 테스트
+tests/e2e/explore.cjs     브라우저 E2E
 public/models/            (비어 있음) 향후 GLB 모델 위치
 ```
 
@@ -96,6 +127,24 @@ public/models/            (비어 있음) 향후 GLB 모델 위치
 `layout.ts` 에 ① `placeSatellite(...)` 로 섬 정의, ② `bridgeDefs` 에 다리, ③ `plazas`/`paths`/`lots` 를
 추가하면 지형·다리·울타리 개구부·가로등·나무 배치가 자동으로 따라옵니다. `npm test` 로 연결 상태를 확인합니다.
 
+## 이동·충돌 시스템 (Phase 2)
+
+- **충돌은 화면과 같은 데이터로 만듭니다.** 눈 지형·포장·다리 상판은 렌더링되는 삼각형을 그대로 Rapier 트라이메시로 쓰고,
+  울타리·난간·건물·나무·가로등은 같은 레이아웃 함수에서 계산합니다. 그래서 보이는 바닥과 밟는 바닥이 어긋나지 않습니다(E2E에서 수치로 확인).
+- **캐릭터**: 높이 1.7 m 캡슐 + Rapier `KinematicCharacterController` (벽 미끄러짐, 40° 이하 경사, 지면 스냅).
+  0.38 m 이하 턱은 자체 계단 보조 로직으로 오릅니다(Rapier 자동 계단은 천천히 걸을 때 실패해서 보완).
+- **안전 경계**: 섬마다 울타리를 따라 보이지 않는 벽, 다리·도착 데크 난간을 따라 벽이 있고 울타리 끝과 난간이 이어져 있습니다.
+  그래도 떨어지면(y < −25) 시작 위치로 돌아옵니다.
+- **고정 시간 간격**: 이동은 항상 1/60초 단위로 계산되어 프레임 속도와 무관합니다. 그리는 위치만 부드럽게 보간합니다.
+- **3인칭 카메라**: 드래그 회전·휠 거리(2.5–16 m)·상하 각도 제한, 걷는 동안 천천히 아바타 뒤로 복귀, 건물·지형이 가리면 앞으로 당겨지고 지면 아래로 내려가지 않습니다.
+- **건물을 다시 디자인할 때**는 `world/collision/blockers.ts` 의 해당 건물 볼륨도 맞춰 주세요. `npm test` 가 문 앞 도달·벽 차단을 검사합니다.
+
+### Phase 3(멀티플레이) 준비
+
+- `PlayerSnapshot` (x, y, z, yaw, speed, anim) — 동기화할 최소 상태. 원격 아바타는 이 값을 보간해 `<Avatar pose>` 에 넘기면 됩니다.
+- `Avatar` 는 위치·입력을 모르는 순수 외형 컴포넌트이고, `AvatarAppearance` 를 다른 방문자에게 그대로 보낼 수 있습니다.
+- `buildCollision()` · `CharacterMotor` · `movement.ts` 는 React·브라우저에 의존하지 않아 Node(Colyseus 서버)에서 같은 충돌·이동 규칙으로 검증할 수 있습니다.
+
 ## 디자인 시스템
 
 - **색상** Soft Pink(지붕·포인트) · Warm Ivory(외벽·눈) · Pastel Blue(하늘) · Sage Green(지붕·나무) ·
@@ -110,11 +159,12 @@ public/models/            (비어 있음) 향후 GLB 모델 위치
 | 단계 | 내용 | 상태 |
 |---|---|---|
 | 1 | World Layout & Design System | ✅ 완료 |
-| 2 | Starlight Plaza (광장 바닥·트리·벤치·가로등·장식) | 대기 |
+| 2 | Avatar Movement · Third-Person Camera · Collision | ✅ 완료 |
+| — | Starlight Plaza 세부 (광장 바닥·트리·벤치·가로등·장식) | 대기 |
 | 3 | Individual Building Design (건물 하나씩) | 대기 |
 | 4 | Floating Islands & Environment (섬·구름·눈·다리·나무) | 대기 |
 | 5 | Visual Integration & Polish | 대기 |
 
-이번 단계에 포함하지 않은 것: 아바타 이동, 충돌, 멀티플레이, 채팅, AI 포토부스, 미니게임, NPC, 이벤트, 건물 내부.
+아직 포함하지 않은 것: 멀티플레이(다음 단계, Colyseus), 채팅, AI 포토부스, 미니게임, NPC, 이벤트, 건물 내부.
 
 > 이전 프로토타입(아바타 이동·Colyseus 멀티플레이)은 이 저장소의 git 기록(커밋 `d3a5dcf`)에 남아 있습니다.
