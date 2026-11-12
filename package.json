@@ -1,26 +1,30 @@
 {
-  "name": "christmas-on-cloud-nine",
+  "name": "sky-village",
   "private": true,
   "version": "0.1.0",
-  "description": "THE CHRISTMAS AFTERPARTY: SKY VILLAGE — 3D multiplayer Christmas sky village",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "description": "THE CHRISTMAS AFTERPARTY: SKY VILLAGE — 3D Christmas sky-island world (visual design & environment)",
+  "type": "module",
   "scripts": {
-    "dev": "concurrently -n server,web -c magenta,cyan \"npm run dev -w @sky/server\" \"npm run dev -w @sky/web\"",
-    "dev:web": "npm run dev -w @sky/web",
-    "dev:server": "npm run dev -w @sky/server",
-    "build": "npm run build -w @sky/web",
-    "start:server": "npm run start -w @sky/server",
-    "test": "npm run test -w @sky/shared",
-    "typecheck": "npm run typecheck -w @sky/shared && npm run typecheck -w @sky/server && npm run typecheck -w @sky/web",
-    "test:server": "node apps/server/test/e2e.mjs",
-    "test:load": "node apps/server/test/load.mjs",
-    "test:e2e": "node tests/e2e/two-browsers.cjs && node tests/e2e/mobile.cjs"
+    "dev": "vite --host",
+    "build": "tsc -p tsconfig.json && vite build",
+    "preview": "vite preview --host",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.0",
+    "@react-three/fiber": "^9.4.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "three": "^0.180.0"
   },
   "devDependencies": {
-    "concurrently": "^9.1.0",
-    "typescript": "~5.9.3"
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/three": "^0.180.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.0",
+    "vitest": "^3.2.0"
   }
 }
