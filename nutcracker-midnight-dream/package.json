@@ -1,0 +1,28 @@
+{
+  "name": "nutcracker-midnight-dream",
+  "private": true,
+  "version": "1.0.0",
+  "description": "The Nutcracker's Midnight Dream — 30s vintage storybook animation (Remotion)",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "audio": "node scripts/generate-audio.mjs",
+    "render": "remotion render src/index.ts NutcrackerDream out/nutcracker-midnight-dream.mp4 --codec=h264 --crf=18",
+    "stills": "node scripts/render-stills.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource/cormorant-garamond": "^5.3.0",
+    "@fontsource/im-fell-english": "^5.3.0",
+    "@remotion/bundler": "^4.0.545",
+    "@remotion/cli": "^4.0.545",
+    "@remotion/fonts": "^4.0.545",
+    "@remotion/renderer": "^4.0.545",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "remotion": "^4.0.545"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "typescript": "^5.9.3"
+  }
+}

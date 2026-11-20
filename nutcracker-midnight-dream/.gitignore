@@ -1,0 +1,3 @@
+node_modules
+out/*.mp4
+!out/nutcracker-midnight-dream.mp4
