@@ -39,6 +39,6 @@ await Promise.all(browsers.map((b) => b.close())); server.close();
 
 if (!(await exists('out/score.wav'))) execFileSync('node', ['scripts/score.mjs'], { stdio: 'inherit' });
 execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(FPS), '-i', `${FR}/f%04d.png`, '-i', 'out/score.wav',
-  '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-tune', 'animation',
+  '-c:v', 'libx264', '-preset', 'slow', '-crf', '22', '-pix_fmt', 'yuv420p', '-tune', 'animation',
   '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', 'out/nutcracker.mp4'], { stdio: 'inherit' });
 console.log('wrote out/nutcracker.mp4');
