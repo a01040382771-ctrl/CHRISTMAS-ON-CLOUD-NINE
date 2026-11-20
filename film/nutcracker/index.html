@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>호두까기 인형 — 구름 위의 크리스마스</title>
+<style>
+  @font-face { font-family: "Gowun Batang"; font-weight: 700; src: url(fonts/GowunBatang-Bold.ttf) format("truetype"); }
+  @font-face { font-family: "Nanum Pen Script"; src: url(fonts/NanumPenScript-Regular.ttf) format("truetype"); }
+  html, body { margin: 0; height: 100%; background: #1b1530; overflow: hidden; }
+  body { display: grid; place-items: center; font-family: "Nanum Pen Script", sans-serif; }
+  canvas { display: block; max-width: 100vw; max-height: 100vh; aspect-ratio: 16 / 9; width: 100vw; height: auto; }
+  #play { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(27,21,48,.55); color: #f4ead6; font-size: 44px; cursor: pointer; border: 0; width: 100%; }
+  #play[hidden] { display: none; }
+</style>
+<script type="importmap">{ "imports": { "three": "./node_modules/three/build/three.module.js" } }</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<button id="play" hidden>▶ 재생 (소리 켜짐)</button>
+<audio id="music" src="out/score.wav" preload="auto"></audio>
+<script type="module">
+  import { createFilm, DURATION, FPS } from './src/main.js';
+  const q = new URLSearchParams(location.search);
+  const W = +(q.get('w') || 1920), H = +(q.get('h') || 1080);
+  // Lettering needs the fonts; pre-load them before building the film.
+  document.fonts.add(new FontFace('Gowun Batang', 'url(fonts/GowunBatang-Bold.ttf)', { weight: '700' }));
+  document.fonts.add(new FontFace('Nanum Pen Script', 'url(fonts/NanumPenScript-Regular.ttf)'));
+  await Promise.all([...document.fonts].map((f) => f.load().catch(() => {})));
+  const film = await createFilm(document.getElementById('c'), W, H);
+  window.__film = film;
+  window.__renderFrame = (i) => { film.renderAt(i / FPS); return document.getElementById('c').toDataURL('image/png'); };
+  window.__renderTime = (t) => { film.renderAt(t); return document.getElementById('c').toDataURL('image/png'); };
+  window.__ready = true;
+  if (q.has('t')) film.renderAt(+q.get('t'));
+  else if (!q.has('render')) {
+    const btn = document.getElementById('play'), music = document.getElementById('music');
+    film.renderAt(0); btn.hidden = false;
+    btn.onclick = () => {
+      btn.hidden = true; music.currentTime = 0; music.play().catch(() => {});
+      const start = performance.now();
+      const loop = () => {
+        const t = music.duration && !music.paused ? music.currentTime : (performance.now() - start) / 1000;
+        film.renderAt(Math.min(t, DURATION - 1 / FPS));
+        if (t < DURATION) requestAnimationFrame(loop); else btn.hidden = false;
+      };
+      loop();
+    };
+  }
+</script>
+</body>
+</html>

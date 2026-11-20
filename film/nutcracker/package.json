@@ -1,0 +1,14 @@
+{
+  "name": "nutcracker-gouache-film",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "30-second gouache-style 3D short: The Nutcracker on Cloud Nine",
+  "scripts": {
+    "preview": "node scripts/serve.mjs",
+    "render": "node scripts/render.mjs"
+  },
+  "dependencies": {
+    "three": "0.170.0"
+  }
+}
