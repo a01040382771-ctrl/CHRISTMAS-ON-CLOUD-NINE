@@ -21,7 +21,7 @@ export const ToySoldier: React.FC<{step: number; drum?: boolean; marching?: bool
     </g>
   );
   return (
-    <g transform={`translate(0 ${bob - 6})`}>
+    <g transform={`translate(0 ${bob - 6})`} filter="url(#gouache)">
       {leg(-1)}
       {leg(1)}
       {/* back arm */}

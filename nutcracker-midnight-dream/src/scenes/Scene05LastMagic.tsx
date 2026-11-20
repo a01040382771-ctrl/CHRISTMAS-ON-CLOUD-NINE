@@ -2,8 +2,7 @@ import React from 'react';
 import {C} from '../styles/palette';
 import {Layer, Cam} from '../animations/camera';
 import {blinkAt, ease, keys, osc, smooth} from '../animations/easing';
-import {Wall, Floor, Window, Fireplace, MantelClock} from '../components/Room';
-import {ChristmasTree} from '../components/Tree';
+import {Plate, IMG, PaintedTree, ClockOverlay, PARLOUR_PLATE} from '../components/Painted';
 import {Clara} from '../components/Clara';
 import {Nutcracker} from '../components/Nutcracker';
 import {LightRays, Twinkle} from '../components/Effects';
@@ -37,22 +36,13 @@ export const Scene05LastMagic: React.FC<{f: number}> = ({f}) => {
   const room = (
     <svg viewBox="0 0 1080 1920" width="100%" height="100%" overflow="hidden">
       <rect width={1080} height={1920} fill={C.burgundy} />
-      <Layer cam={cam} depth={0.86}>
-        <Wall x={-400} y={-200} w={1900} h={1520} railY={1080} tint="morning" />
-        <Window cx={PARLOUR.window.cx} top={PARLOUR.window.top} w={PARLOUR.window.w} h={PARLOUR.window.h} f={f} time="morning" breeze={0.5} />
-      </Layer>
-      <Layer cam={cam} depth={0.93}>
-        <g transform={`translate(${PARLOUR.fire.x} ${PARLOUR.fire.y})`}>
-          <Fireplace f={f} lit={0} />
-        </g>
-        <g transform={`translate(${PARLOUR.fire.x} ${PARLOUR.fire.y - 490})`}>
-          <MantelClock f={f} minutes={60 + 7 * 60 + 40 + f / 30} scale={0.9} />
-        </g>
+      <Layer cam={cam} depth={0.92}>
+        <Plate src={IMG.parlourMorning} />
+        <ClockOverlay minutes={60 + 7 * 60 + 40 + f / 30} />
       </Layer>
       <Layer cam={cam} depth={1}>
-        <Floor y0={1300} y1={2300} vpY={560} rug={PARLOUR.rug} />
         <g transform={`translate(${PARLOUR.tree.x} ${PARLOUR.tree.y})`}>
-          <ChristmasTree f={f} lit={false} />
+          <PaintedTree f={f} h={PARLOUR.tree.h} lit={false} />
         </g>
         <Gifts />
         <g transform={`translate(${CLARA.x} ${CLARA.y}) scale(${CLARA.s})`}>
@@ -88,7 +78,7 @@ export const Scene05LastMagic: React.FC<{f: number}> = ({f}) => {
       </Layer>
       {/* morning sun through the window */}
       <Layer cam={cam} depth={0.95}>
-        <LightRays x={PARLOUR.window.cx} y={PARLOUR.window.top + 160} angle={-28} len={1700} spread={260} opacity={0.9} f={f} />
+        <LightRays x={PARLOUR_PLATE.glass.x + PARLOUR_PLATE.glass.w / 2} y={PARLOUR_PLATE.glass.y + 260} angle={-28} len={1700} spread={260} opacity={0.9} f={f} />
       </Layer>
       <rect width={1080} height={1920} fill="url(#g-morning)" style={{mixBlendMode: 'soft-light'}} />
       <defs>

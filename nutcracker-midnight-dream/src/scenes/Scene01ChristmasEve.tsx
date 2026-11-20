@@ -2,8 +2,8 @@ import React from 'react';
 import {C} from '../styles/palette';
 import {Layer, Cam} from '../animations/camera';
 import {blinks, ease, keys, osc} from '../animations/easing';
-import {Wall, Floor, Window, Fireplace, MantelClock, GiftBox} from '../components/Room';
-import {ChristmasTree} from '../components/Tree';
+import {GiftBox} from '../components/Room';
+import {Plate, IMG, PaintedTree, WindowSnow, FireOverlay, ClockOverlay} from '../components/Painted';
 import {Clara} from '../components/Clara';
 import {Nutcracker} from '../components/Nutcracker';
 import {ink} from '../components/Defs';
@@ -12,16 +12,14 @@ import T from '../timeline.json';
 
 /** Shared layout of the parlour so scene 5 can return to the very same room. */
 export const PARLOUR = {
-  window: {cx: 470, top: 190, w: 300, h: 540},
-  fire: {x: 190, y: 1330},
-  tree: {x: 790, y: 1440},
+  tree: {x: 815, y: 1450, h: 1180},
   nut: {x: 700, y: 1532, s: 0.4},
   clara: {x: 380, y: 1790, s: 0.92},
   rug: {cx: 520, cy: 1700, rx: 520, ry: 165},
 };
 
 export const Gifts: React.FC<{f?: number}> = () => (
-  <g>
+  <g filter="url(#gouache)">
     <g transform="translate(615 1478)">
       <GiftBox w={86} h={64} color={C.gold} band={C.burgundy} />
     </g>
@@ -39,7 +37,7 @@ export const Gifts: React.FC<{f?: number}> = () => (
 
 /** Foreground pine swag that frames the top of the picture (parallax). */
 export const ForegroundGarland: React.FC<{f: number}> = ({f}) => (
-  <g>
+  <g filter="url(#gouache)">
     <path d="M -80 -20 Q 540 300 1160 -20 L 1160 -200 L -80 -200 Z" fill={C.forestDeep} />
     <path d="M -80 -20 Q 540 300 1160 -20" fill="none" {...ink(46, C.forest)} />
     <path d="M -80 -20 Q 540 300 1160 -20" fill="none" {...ink(14, C.forestLight)} strokeDasharray="4 12" />
@@ -75,22 +73,15 @@ export const Scene01ChristmasEve: React.FC<{f: number}> = ({f}) => {
   return (
     <svg viewBox="0 0 1080 1920" width="100%" height="100%">
       <rect width={1080} height={1920} fill={C.burgundyDeep} />
-      <Layer cam={cam} depth={0.86}>
-        <Wall x={-400} y={-200} w={1900} h={1520} railY={1080} />
-        <Window cx={P.window.cx} top={P.window.top} w={P.window.w} h={P.window.h} f={f} />
-      </Layer>
-      <Layer cam={cam} depth={0.93}>
-        <g transform={`translate(${P.fire.x} ${P.fire.y})`}>
-          <Fireplace f={f} />
-        </g>
-        <g transform={`translate(${P.fire.x} ${P.fire.y - 490})`}>
-          <MantelClock f={f} minutes={minutes} scale={0.9} />
-        </g>
+      <Layer cam={cam} depth={0.92}>
+        <Plate src={IMG.parlourNight} />
+        <WindowSnow f={f} id="s1" />
+        <FireOverlay f={f} />
+        <ClockOverlay minutes={minutes} glow={ease(f, [T.cues.clockHandsAtMidnight - 4, T.cues.clockHandsAtMidnight + 6], [0, 0.8]) * ease(f, [T.cues.clockHandsAtMidnight + 10, T.cues.clockHandsAtMidnight + 50], [1, 0.3])} />
       </Layer>
       <Layer cam={cam} depth={1}>
-        <Floor y0={1300} y1={2300} vpY={560} rug={P.rug} />
         <g transform={`translate(${P.tree.x} ${P.tree.y})`}>
-          <ChristmasTree f={f} />
+          <PaintedTree f={f} h={P.tree.h} />
         </g>
         <Gifts />
         <g transform={`translate(${P.nut.x} ${P.nut.y}) scale(${P.nut.s})`}>

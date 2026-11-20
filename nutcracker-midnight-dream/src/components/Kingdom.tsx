@@ -151,15 +151,15 @@ export const Ballerina: React.FC<{ph: number; tutu?: string; tutuDeep?: string; 
     })
     .sort((a, b) => a.y - b.y);
   return (
-    <g>
+    <g filter="url(#gouache)">
       <ellipse cx={0} cy={4} rx={60} ry={10} fill="rgba(120,60,80,0.25)" />
       {/* standing leg on pointe */}
-      <path d="M -7 -190 L -6 -20 L 6 -20 L 9 -190 Z" fill="#F6D9D2" {...ink(2)} />
+      <path d="M -7 -190 L -6 -20 L 6 -20 L 9 -190 Z" fill="#EDBFAE" {...ink(2)} />
       <path d="M -6 -22 L -5 0 L 5 0 L 6 -22 Z" fill={C.roseDeep} {...ink(1.8)} />
       <path d="M -6 -40 L 6 -30 M 6 -40 L -6 -30" {...hair(1.4, C.roseDeep)} />
       {/* passé leg */}
       <path d={`M 2 -186 L ${knee} -130 L 4 -110`} fill="none" {...ink(13, C.ink)} />
-      <path d={`M 2 -186 L ${knee} -130 L 4 -110`} fill="none" stroke="#F6D9D2" strokeWidth={10} strokeLinecap="round" strokeLinejoin="round" />
+      <path d={`M 2 -186 L ${knee} -130 L 4 -110`} fill="none" stroke="#EDBFAE" strokeWidth={10} strokeLinecap="round" strokeLinejoin="round" />
       {/* tutu: layered net with turning scallops */}
       <g transform="translate(0 -196)">
         <ellipse rx={132} ry={30} fill={tutuDeep} {...ink(2.2)} />
@@ -180,9 +180,9 @@ export const Ballerina: React.FC<{ph: number; tutu?: string; tutuDeep?: string; 
       {/* arms en couronne */}
       <g transform={`translate(0 -298) scale(${0.65 + 0.35 * Math.abs(c)} 1)`}>
         <path d="M -24 4 C -70 -20 -64 -96 -8 -112" fill="none" {...ink(12, C.ink)} />
-        <path d="M -24 4 C -70 -20 -64 -96 -8 -112" fill="none" stroke="#F6D9D2" strokeWidth={9} strokeLinecap="round" />
+        <path d="M -24 4 C -70 -20 -64 -96 -8 -112" fill="none" stroke="#EDBFAE" strokeWidth={9} strokeLinecap="round" />
         <path d="M 24 4 C 70 -20 64 -96 8 -112" fill="none" {...ink(12, C.ink)} />
-        <path d="M 24 4 C 70 -20 64 -96 8 -112" fill="none" stroke="#F6D9D2" strokeWidth={9} strokeLinecap="round" />
+        <path d="M 24 4 C 70 -20 64 -96 8 -112" fill="none" stroke="#EDBFAE" strokeWidth={9} strokeLinecap="round" />
       </g>
       {/* neck + head */}
       <rect x={-6} y={-322} width={12} height={22} fill="#F1CDBE" {...ink(1.6)} />

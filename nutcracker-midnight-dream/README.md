@@ -1,7 +1,9 @@
 # The Nutcracker's Midnight Dream
 
 고전 동화 『호두까기 인형』을 재해석한 **30초 / 1080×1920 (9:16) / 30fps / 900프레임** 크리스마스 판타지 애니메이션입니다.
-React + TypeScript + **Remotion 4**로 만들었습니다. 모든 그림은 코드로 그린 SVG 레이어이고, 음악과 효과음은 스크립트로 직접 합성했습니다.
+React + TypeScript + **Remotion 4**로 만들었습니다.
+
+그림체는 **빈티지 동화책 과슈 일러스트**입니다. 배경과 큰 소품은 AI로 그린 과슈 그림(PNG)이고, 움직이는 캐릭터와 효과는 SVG 리그 위에 과슈 질감 필터를 입혀 그림 속에 녹아들게 했습니다. 음악과 효과음은 스크립트로 직접 합성했습니다.
 
 | 결과물 | 위치 |
 |---|---|
@@ -18,8 +20,9 @@ React + TypeScript + **Remotion 4**로 만들었습니다. 모든 그림은 코�
 cd nutcracker-midnight-dream
 npm install
 
-# (선택) 다시 만들어야 할 때만: 종이 텍스처와 음악/효과음
+# (선택) 다시 만들어야 할 때만: 종이 텍스처, 아침 배경, 음악/효과음
 node scripts/generate-textures.cjs   # public/textures/*.png (Playwright 필요)
+python3 scripts/make-morning-plate.py # public/gouache/parlour-morning.png
 npm run audio                        # public/audio/score.wav
 
 npm run studio      # Remotion Studio에서 미리보기 및 타임라인 확인
@@ -33,7 +36,7 @@ Chrome을 내려받을 수 없는 환경(CI, 클라우드 컨테이너)에서는
 export REMOTION_BROWSER=/path/to/chrome-headless-shell   # remotion.config.ts가 이 값을 읽습니다
 ```
 
-4코어 기준 전체 렌더링은 몇 분 정도 걸립니다.
+4코어 기준 전체 렌더링은 10분 이상 걸릴 수 있습니다(과슈 이미지와 필터 때문).
 
 ## 프로젝트 구조
 
@@ -104,37 +107,42 @@ scripts/
 
 ## 에셋 목록
 
-### 이 프로젝트에서 제작해 사용한 에셋
+### 과슈 일러스트 (AI 생성, `public/gouache/`)
 
-| 에셋 | 구현 | 파일 |
+Figma의 이미지 생성 기능(gpt-image 모델)으로 같은 스타일 프롬프트를 써서 만들었습니다. 원본은 `src/assets/gouache/`에, 트리밍한 사용본은 `public/gouache/`에 있습니다. 생성 원본은 Figma 파일 "Nutcracker Gouache Assets"에도 남아 있습니다.
+
+| 파일 | 내용 | 사용 장면 |
 |---|---|---|
-| 클라라 (서 있는 / 무릎 꿇은 / 앉은 포즈) | 손그림 스타일 SVG 패스, 관절 단위 리깅 | `components/Clara.tsx` |
-| 호두까기 인형 | SVG, 페그 관절, 눈꺼풀, 턱 레버 | `components/Nutcracker.tsx` |
-| 장난감 병정 (총/북) | SVG, 박자에 맞춘 걷기 사이클 | `components/Toys.tsx` |
-| 크리스마스트리 | 절차적 가지 생성, 장식·촛불·별 | `components/Tree.tsx` |
-| 빅토리아풍 거실 (다마스크 벽지, 웨인스코트, 마루, 러그, 아치 창, 커튼, 벽난로, 시계, 양말, 선물) | SVG | `components/Room.tsx` |
-| 팝업 성, 장난감 극장, 안락의자, 책장 | SVG | `components/Toys.tsx` |
-| 설탕 궁전, 설탕탑, 솜사탕 구름, 사탕 가로등 | SVG | `components/Kingdom.tsx` |
-| 발레리나 (회전) | SVG, 회전 위상에 따른 파트 변형 | `components/Kingdom.tsx` |
-| 눈송이, 설탕 결정 별, 마법 가루, 반짝임, 빛줄기 | SVG 파티클 (결정적 난수, 프레임마다 일정) | `components/Effects.tsx` |
-| 동화책 마지막 페이지 | SVG + 타이포그래피 | `components/StoryBook.tsx` |
-| 종이 결, 수채 얼룩 텍스처 | feTurbulence를 PNG로 미리 렌더링 | `public/textures/` |
-| 음악과 효과음 | 직접 작곡 및 합성 | `public/audio/score.wav` |
-| 서체 | IM Fell English, Cormorant Garamond (SIL Open Font License) | `public/fonts/` |
+| `parlour-night.png` | 밤의 빅토리아풍 거실 (창, 커튼, 벽난로, 벽난로 시계, 러그) | 1, 2(흐림 배경과 바닥), 3 |
+| `parlour-morning.png` | 같은 그림에서 파생: 창을 새벽 하늘로, 불을 잔불로 바꾸고 아침 톤으로 보정 (`scripts/make-morning-plate.py`) | 5 |
+| `tree.png` | 크리스마스트리 (투명 배경) | 1, 2, 3(성장), 5 |
+| `kingdom.png` | 사탕 왕국: 과자 궁전, 설탕탑, 체크무늬 무도회장 | 4 |
+| `castle.png`, `theatre.png` | 팝업 장난감 성, 장난감 극장 (투명 배경) | 3 |
+| `armchair.png`, `bookcase.png` | 변신 전의 안락의자와 책장 (투명 배경) | 3 |
 
-### 전문 일러스트로 교체하면 품질이 가장 크게 오를 에셋
+그림 위에 얹은 애니메이션 오버레이(`components/Painted.tsx`): 창밖 눈, 벽난로 불꽃과 불티, 자정을 가리키는 시계 바늘, 트리 촛불의 깜빡임과 별빛.
 
-이 세션에서는 일관된 스타일의 이미지 생성 도구를 쓸 수 없었기 때문에 모든 요소를 SVG로 그렸습니다. 레이어 구조와 파라미터를 그대로 두고 아래 항목을 손그림(과슈/수채, 투명 PNG 레이어)으로 교체하면 "살아 움직이는 동화책 삽화"에 더 가까워집니다.
+### 코드로 그린 리그와 효과 (SVG + `#gouache` 필터)
 
-1. **배경 플레이트 3장:** 밤의 거실, 아침의 거실(같은 구도), 사탕 왕국 원경. 패럴랙스를 위해 원경·중경·근경으로 나눈 PNG가 필요합니다.
-2. **클라라 파츠:** 머리(눈 뜸/감음/놀람), 몸통 3포즈, 팔 상·하박, 리본. 현재 피벗 좌표에 맞춥니다.
-3. **호두까기 인형 파츠:** 머리, 몸통, 팔 상·하박, 눈꺼풀, 아래턱.
-4. **크리스마스트리:** 성장 장면에서 확대되므로 고해상도 단독 레이어로 준비합니다.
-5. **설탕 궁전:** 영상에서 가장 화려한 장면의 중심 요소입니다.
-6. **발레리나 회전 시트:** 8방향.
-7. **동화책 표지와 펼친 페이지 스캔:** 실제 종이 질감.
+| 에셋 | 파일 |
+|---|---|
+| 클라라 (서 있는 / 무릎 꿇은 / 앉은 포즈, 눈·입·팔·리본 리그) | `components/Clara.tsx` |
+| 호두까기 인형 (페그 관절, 눈동자, 눈꺼풀, 턱 레버) | `components/Nutcracker.tsx` |
+| 장난감 병정, 회전하는 발레리나 | `components/Toys.tsx`, `components/Kingdom.tsx` |
+| 선물 상자 (뚜껑 열림) | `components/Room.tsx` |
+| 눈송이, 설탕 결정 별, 마법 가루, 빛줄기, 전환 효과 | `components/Effects.tsx`, `components/Transitions.tsx` |
+| 동화책 마지막 페이지 | `components/StoryBook.tsx` |
+| 종이 결, 수채 얼룩 텍스처 | `public/textures/` |
+| 음악과 효과음 (직접 작곡 및 합성) | `public/audio/score.wav` |
+| 서체: IM Fell English, Cormorant Garamond (SIL OFL) | `public/fonts/` |
 
-교체할 때는 `src/assets/`에 파일을 두고, 해당 컴포넌트의 SVG 그룹을 `<Img src={staticFile(...)}/>`나 SVG `<image>`로 바꾸면 됩니다. 애니메이션 props는 그대로 쓸 수 있습니다.
+`#gouache` 필터(`components/Defs.tsx`)는 색을 따뜻하게 보정하고, 물감 얼룩, 마른 붓 결, 가장자리 안료 고임을 더합니다.
+
+이전 버전에서 쓰던 SVG 배경(`Room.tsx`의 Wall/Window/Fireplace, `Tree.tsx`, `Kingdom.tsx`의 궁전과 탑 등)은 대체용으로 코드에 남겨 두었습니다.
+
+### 더 좋아질 수 있는 부분
+
+캐릭터는 눈, 관절, 리본이 움직여야 해서 리그(SVG)로 유지했습니다. 손으로 그린 과슈 파츠(머리, 몸통, 팔 상·하박, 눈꺼풀)를 같은 피벗에 맞춰 넣으면 배경과 완전히 같은 붓 터치가 됩니다.
 
 ## 품질 점검 (QC)
 

@@ -65,7 +65,7 @@ const NutEye: React.FC<{x: number; px: number; py: number; blink: number; glint:
   </g>
 );
 
-export const Nutcracker: React.FC<NutPose> = ({
+const NutcrackerRig: React.FC<NutPose> = ({
   pupilX = 0,
   pupilY = 0,
   blink = 0,
@@ -199,3 +199,10 @@ export const Nutcracker: React.FC<NutPose> = ({
     </g>
   );
 };
+
+/** Painted in gouache (see #gouache in Defs). */
+export const Nutcracker: React.FC<NutPose> = (p) => (
+  <g filter="url(#gouache)">
+    <NutcrackerRig {...p} />
+  </g>
+);

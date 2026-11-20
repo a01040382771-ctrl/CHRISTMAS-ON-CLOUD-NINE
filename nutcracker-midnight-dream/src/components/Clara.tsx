@@ -131,7 +131,7 @@ const Arm: React.FC<{side: -1 | 1; a: number; e: number}> = ({side, a, e}) => (
   </g>
 );
 
-export const Clara: React.FC<ClaraPose> = (p) => {
+const ClaraRig: React.FC<ClaraPose> = (p) => {
   const pose = p.pose ?? 'stand';
   const br = (p.breathe ?? 0) * 2;
   const headTilt = p.headTilt ?? 0;
@@ -225,3 +225,10 @@ export const Clara: React.FC<ClaraPose> = (p) => {
     </g>
   );
 };
+
+/** Painted in gouache (see #gouache in Defs). */
+export const Clara: React.FC<ClaraPose> = (p) => (
+  <g filter="url(#gouache)">
+    <ClaraRig {...p} />
+  </g>
+);

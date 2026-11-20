@@ -2,8 +2,8 @@ import React from 'react';
 import {C} from '../styles/palette';
 import {Layer, Cam} from '../animations/camera';
 import {blinks, ease, keys, osc, outBack} from '../animations/easing';
-import {Wall, Floor, GiftBox} from '../components/Room';
-import {ChristmasTree} from '../components/Tree';
+import {GiftBox} from '../components/Room';
+import {Plate, IMG, PaintedTree} from '../components/Painted';
 import {Clara} from '../components/Clara';
 import {Nutcracker} from '../components/Nutcracker';
 import {MagicDust, Twinkle} from '../components/Effects';
@@ -53,17 +53,34 @@ export const Scene02Awakening: React.FC<{f: number}> = ({f}) => {
     <svg viewBox="0 0 1080 1920" width="100%" height="100%">
       <rect width={1080} height={1920} fill={C.burgundyDeep} />
       <Layer cam={cam} depth={0.55}>
-        <g filter="url(#blur4)">
-          <Wall x={-400} y={-300} w={1900} h={1700} railY={1020} />
+        <g filter="url(#blur4)" transform="translate(540 1300) scale(1.25) translate(-540 -1300)">
+          <Plate src={IMG.parlourNight} />
         </g>
       </Layer>
       <Layer cam={cam} depth={0.78}>
-        <g filter="url(#blur4)" transform="translate(700 2120) scale(2.2)">
-          <ChristmasTree f={f} />
+        <g filter="url(#blur4)" transform="translate(760 1900)">
+          <PaintedTree f={f} h={2300} />
         </g>
       </Layer>
       <Layer cam={cam} depth={1}>
-        <Floor y0={1360} y1={2400} vpY={700} rug={{cx: 520, cy: 1820, rx: 700, ry: 230}} />
+        {/* the painted floor and rug, close up */}
+        <defs>
+          <clipPath id="s2-floor">
+            <rect x={-200} y={1300} width={1480} height={800} />
+          </clipPath>
+        </defs>
+        <g transform="translate(540 1300) scale(1.25) translate(-540 -1300)">
+          <g clipPath="url(#s2-floor)">
+            <Plate src={IMG.parlourNight} />
+          </g>
+          <rect x={-200} y={1296} width={1480} height={90} fill="url(#g-floorfade)" />
+        </g>
+        <defs>
+          <linearGradient id="g-floorfade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#2A1A14" stopOpacity="0.6" />
+            <stop offset="1" stopColor="#2A1A14" stopOpacity="0" />
+          </linearGradient>
+        </defs>
         {/* floor light spreading from the clasp */}
         {light > 0 && (
           <g style={{mixBlendMode: 'screen'}}>
@@ -82,10 +99,10 @@ export const Scene02Awakening: React.FC<{f: number}> = ({f}) => {
             })}
           </g>
         )}
-        <g transform="translate(905 1600)">
+        <g transform="translate(905 1600)" filter="url(#gouache)">
           <GiftBox w={210} h={150} color={C.forest} band={C.gold} />
         </g>
-        <g transform="translate(70 1500)">
+        <g transform="translate(70 1500)" filter="url(#gouache)">
           <GiftBox w={170} h={120} color={C.gold} band={C.burgundy} />
         </g>
         {/* the nutcracker, now as tall as a kneeling child */}

@@ -13,7 +13,7 @@ export const brand = {
 export const C = {
   ...brand,
   // ink (sepia line work — never pure black)
-  ink: '#3B2720',
+  ink: '#4A3127',
   inkSoft: 'rgba(59,39,32,0.55)',
   inkFaint: 'rgba(59,39,32,0.22)',
   // burgundy family

@@ -3,6 +3,10 @@ import {C} from '../styles/palette';
 
 /** Common stroke presets — sepia ink, never pure black. */
 export const ink = (w = 2.6, color: string = C.ink) =>
+  // painted plates use fine pen lines, so every stroke is drawn ~25% lighter
+  inkRaw(w * 0.75, color);
+
+const inkRaw = (w: number, color: string) =>
   ({
     stroke: color,
     strokeWidth: w,
@@ -23,6 +27,34 @@ export const GlobalDefs: React.FC = () => (
       <filter id="wobble" x="-5%" y="-5%" width="110%" height="110%">
         <feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="4" />
         <feDisplacementMap in="SourceGraphic" scale="4.5" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+      {/*
+        Gouache: opaque paint with visible dry-brush streaks, lighter
+        scumbled highlights and pigment pooling along each shape's edge.
+        Applied to every character so the rigs sit inside the painted plates.
+      */}
+      <filter id="gouache" x="-4%" y="-4%" width="108%" height="108%" colorInterpolationFilters="sRGB">
+        {/* warm the colours toward candle-lit pigment */}
+        <feColorMatrix in="SourceGraphic" type="matrix" values="0.97 0.03 0 0 0.01  0.02 0.93 0.02 0 0.01  0.02 0.05 0.83 0 0  0 0 0 1 0" result="warm" />
+        {/* soft tonal mottling of hand-mixed paint */}
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.03" numOctaves="3" seed="12" result="n1" />
+        <feColorMatrix in="n1" type="matrix" values="0 0 0 0 0.3  0 0 0 0 0.18  0 0 0 0 0.14  0.9 0 0 0 -0.42" result="dark" />
+        {/* dry-brush streak highlights */}
+        <feTurbulence type="fractalNoise" baseFrequency="0.035 0.009" numOctaves="2" seed="31" result="n2" />
+        <feColorMatrix in="n2" type="matrix" values="0 0 0 0 1  0 0 0 0 0.96  0 0 0 0 0.88  0.8 0 0 0 -0.44" result="light" />
+        {/* pigment pooling along the edges */}
+        <feMorphology in="SourceAlpha" operator="erode" radius="2" result="eroded" />
+        <feGaussianBlur in="eroded" stdDeviation="3" result="erodedBlur" />
+        <feComposite in="SourceAlpha" in2="erodedBlur" operator="arithmetic" k2="1" k3="-1" result="edge" />
+        <feFlood floodColor="#5A3326" floodOpacity="0.2" />
+        <feComposite in2="edge" operator="in" result="edgeTint" />
+        <feMerge result="painted">
+          <feMergeNode in="warm" />
+          <feMergeNode in="dark" />
+          <feMergeNode in="light" />
+          <feMergeNode in="edgeTint" />
+        </feMerge>
+        <feComposite in="painted" in2="SourceAlpha" operator="in" />
       </filter>
       <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
         <feGaussianBlur stdDeviation="14" />

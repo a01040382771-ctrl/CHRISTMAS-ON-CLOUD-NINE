@@ -2,11 +2,11 @@ import React from 'react';
 import {C} from '../styles/palette';
 import {Layer, Cam} from '../animations/camera';
 import {ease, keys, osc, outBack, smooth} from '../animations/easing';
-import {Wall, Floor, GiftBox} from '../components/Room';
-import {ChristmasTree} from '../components/Tree';
+import {GiftBox} from '../components/Room';
+import {Plate, IMG, PaintedTree, Prop} from '../components/Painted';
 import {Clara} from '../components/Clara';
 import {Nutcracker} from '../components/Nutcracker';
-import {ToySoldier, ToyCastle, ToyTheater, Armchair, Bookcase} from '../components/Toys';
+import {ToySoldier} from '../components/Toys';
 import {MagicDust} from '../components/Effects';
 import {range, rnd} from '../animations/particles';
 import T from '../timeline.json';
@@ -19,12 +19,12 @@ const BEAT = (T.fps * 60) / T.bpm; // 15 frames
 const PopUp: React.FC<{p: number; children: React.ReactNode}> = ({p, children}) =>
   p <= 0.001 ? null : <g transform={`skewX(${(1 - Math.min(1, p)) * -14}) scale(1 ${p})`}>{children}</g>;
 
-export const THEATRE = {x: 850, y: 1440, s: 0.95, depth: 0.9};
+export const THEATRE = {x: 845, y: 1450, h: 500, depth: 0.9};
 
 export const Scene03EnchantedToys: React.FC<{f: number}> = ({f}) => {
   // camera: tilt up with the growing tree, glide right, then dive into the theatre stage
   const dive = ease(f, [138, 180], [0, 1], (t) => smooth(t) * smooth(t));
-  const stage = {x: THEATRE.x, y: THEATRE.y - 250 * THEATRE.s};
+  const stage = {x: THEATRE.x, y: THEATRE.y - 0.56 * THEATRE.h};
   const base: Cam = {
     x: keys(f, [[0, 520], [60, 500], [140, 600]]),
     y: keys(f, [[0, 1080], [40, 900], [100, 1040], [140, 1060]]),
@@ -33,7 +33,7 @@ export const Scene03EnchantedToys: React.FC<{f: number}> = ({f}) => {
   const target: Cam = {
     x: 540 + (stage.x - 540) / THEATRE.depth,
     y: 960 + (stage.y - 960) / THEATRE.depth,
-    zoom: 1 + (4.6 - 1) / THEATRE.depth,
+    zoom: 1 + (4.4 - 1) / THEATRE.depth,
   };
   const cam: Cam = {
     x: base.x + (target.x - base.x) * dive,
@@ -41,7 +41,7 @@ export const Scene03EnchantedToys: React.FC<{f: number}> = ({f}) => {
     zoom: base.zoom + (target.zoom - base.zoom) * dive,
   };
 
-  const grow = ease(f, [L(T.cues.treeGrowStart), L(T.cues.treeGrowStart) + 66], [0.62, 1.55], outBack);
+  const grow = ease(f, [L(T.cues.treeGrowStart), L(T.cues.treeGrowStart) + 66], [700, 1900], outBack);
   const pops = T.cues.giftPops.map((c) => ease(f, [L(c), L(c) + 14], [0, 1], outBack));
   const [pu1, pu2] = T.cues.popUps.map(L);
   const chairFold = ease(f, [pu1 - 10, pu1], [1, 0]);
@@ -54,38 +54,31 @@ export const Scene03EnchantedToys: React.FC<{f: number}> = ({f}) => {
   return (
     <svg viewBox="0 0 1080 1920" width="100%" height="100%">
       <rect width={1080} height={1920} fill={C.burgundyDeep} />
-      <Layer cam={cam} depth={0.45}>
-        <Wall x={-900} y={-1400} w={2900} h={2750} railY={1090} />
-        {/* magic light on the wall behind the tree */}
-        <ellipse cx={540} cy={700} rx={700} ry={900} fill="url(#g-warm)" opacity={0.4 + osc(f, 40, 0.06)} />
-      </Layer>
-      <Layer cam={cam} depth={0.7}>
-        <g transform={`translate(540 1380) scale(${grow})`}>
-          <ChristmasTree f={f} glow={1.3} />
-        </g>
-        <MagicDust f={f} cx={540} cy={1100} start={0} count={60} spread={700} dur={120} seed="tg" rise={1.2} />
-      </Layer>
       <Layer cam={cam} depth={0.9}>
-        <Floor y0={1330} y1={2600} vpY={500} />
+        <g transform="translate(540 1300) scale(1.22) translate(-540 -1300)">
+          <Plate src={IMG.parlourNight} />
+        </g>
+        {/* magic light behind the tree */}
+        <ellipse cx={540} cy={900} rx={620} ry={800} fill="url(#g-warm)" opacity={0.35 + osc(f, 40, 0.06)} style={{mixBlendMode: 'screen'}} />
+        <g transform="translate(540 1400)">
+          <PaintedTree f={f} h={grow} glow={1.3} />
+        </g>
+        <MagicDust f={f} cx={540} cy={1000} start={0} count={60} spread={700} dur={120} seed="tg" rise={1.2} />
         {/* armchair folds flat … a castle unfolds */}
-        <g transform="translate(200 1460)">
+        <g transform="translate(205 1470)">
           <PopUp p={chairFold}>
-            <Armchair />
+            <Prop name="armchair" h={400} />
           </PopUp>
           <PopUp p={castleUp}>
-            <g transform="scale(0.95)">
-              <ToyCastle f={f} />
-            </g>
+            <Prop name="castle" h={520} />
           </PopUp>
         </g>
         <g transform={`translate(${THEATRE.x} ${THEATRE.y})`}>
           <PopUp p={shelfFold}>
-            <Bookcase />
+            <Prop name="bookcase" h={520} />
           </PopUp>
           <PopUp p={theatreUp}>
-            <g transform={`scale(${THEATRE.s})`}>
-              <ToyTheater f={f} />
-            </g>
+            <Prop name="theatre" h={THEATRE.h} />
           </PopUp>
         </g>
       </Layer>
@@ -99,7 +92,7 @@ export const Scene03EnchantedToys: React.FC<{f: number}> = ({f}) => {
         ].map((g, i) => {
           const p = pops[i];
           return (
-            <g key={i} transform={`translate(${g.x} ${g.y})`}>
+            <g key={i} transform={`translate(${g.x} ${g.y})`} filter="url(#gouache)">
               {p > 0 && (
                 <g transform={`translate(0 ${-118 + (1 - p) * 120}) scale(0.62)`}>
                   <ToySoldier step={Math.max(0, beat)} drum marching={false} />
