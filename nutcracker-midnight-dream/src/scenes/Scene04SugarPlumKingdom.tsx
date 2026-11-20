@@ -2,10 +2,10 @@ import React from 'react';
 import {C} from '../styles/palette';
 import {Layer, Cam} from '../animations/camera';
 import {blinks, ease, keys, osc} from '../animations/easing';
-import {Ballerina} from '../components/Kingdom';
+import {Ballerina} from '../components/PaintedCast';
 import {Plate, IMG} from '../components/Painted';
-import {Clara} from '../components/Clara';
-import {Nutcracker} from '../components/Nutcracker';
+import {Clara} from '../components/PaintedCast';
+import {Nutcracker} from '../components/PaintedCast';
 import {MagicDust, Snow, Twinkle} from '../components/Effects';
 import {range, rnd} from '../animations/particles';
 

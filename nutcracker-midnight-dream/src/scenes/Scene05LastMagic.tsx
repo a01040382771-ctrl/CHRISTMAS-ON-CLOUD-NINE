@@ -3,8 +3,8 @@ import {C} from '../styles/palette';
 import {Layer, Cam} from '../animations/camera';
 import {blinkAt, ease, keys, osc, smooth} from '../animations/easing';
 import {Plate, IMG, PaintedTree, ClockOverlay, PARLOUR_PLATE} from '../components/Painted';
-import {Clara} from '../components/Clara';
-import {Nutcracker} from '../components/Nutcracker';
+import {Clara} from '../components/PaintedCast';
+import {Nutcracker} from '../components/PaintedCast';
 import {LightRays, Twinkle} from '../components/Effects';
 import {StoryPage} from '../components/StoryBook';
 import {PARLOUR, Gifts} from './Scene01ChristmasEve';
@@ -21,11 +21,11 @@ export const Scene05LastMagic: React.FC<{f: number}> = ({f}) => {
   const wink = L(T.cues.blink);
   const title = L(T.cues.title);
 
-  const nutFace = {x: CLARA.x + 14 * CLARA.s, y: CLARA.y - 233 * CLARA.s};
+  const nutFace = {x: CLARA.x + 14 * CLARA.s, y: CLARA.y - 165 * CLARA.s};
   const cam: Cam = {
     x: keys(f, [[0, CLARA.x - 20], [wink - 20, nutFace.x], [wink + 8, nutFace.x], [title + 8, 540]]),
     y: keys(f, [[0, CLARA.y - 300], [wink - 20, nutFace.y], [wink + 8, nutFace.y], [title + 8, 960]]),
-    zoom: keys(f, [[0, 1.6], [wink - 20, 3.2], [wink + 8, 3.3], [title + 8, 1]]),
+    zoom: keys(f, [[0, 1.6], [wink - 20, 3.4], [wink + 8, 3.5], [title + 8, 1]]),
   };
 
   const eyesOpen = ease(f, [wake, wake + 14], [0, 1]);
@@ -56,17 +56,17 @@ export const Scene05LastMagic: React.FC<{f: number}> = ({f}) => {
             headY={headUp * 6}
             mouth={eyesOpen < 0.5 ? 'sleep' : f > wink + 4 ? 'o' : 'smile'}
             brow={f > wink + 4 ? 1 : 0.2}
-            armL={10}
-            elbowL={-80}
-            armR={10}
-            elbowR={-78}
+            armL={8}
+            elbowL={-46}
+            armR={8}
+            elbowR={-44}
             sway={osc(f, 80) * 0.5}
             breathe={osc(f, eyesOpen < 0.5 ? 100 : 70)}
             hug={
-              <g transform="translate(14 -80) scale(0.36)">
+              <g transform="translate(14 -10) scale(0.32)">
                 <Nutcracker armL={2} armR={2} winkOnly blink={winkAmt} pupilX={-0.1} pupilY={0.1} />
                 {f > wink - 2 && f < wink + 26 && (
-                  <g transform={`translate(22 -426) rotate(${f * 6})`} style={{mixBlendMode: 'screen'}}>
+                  <g transform={`translate(18 -486) rotate(${f * 6})`} style={{mixBlendMode: 'screen'}}>
                     <circle r={60} fill="url(#g-magic)" opacity={ease(f, [wink, wink + 4], [0, 1]) * ease(f, [wink + 10, wink + 26], [1, 0])} />
                     <Twinkle r={48} opacity={ease(f, [wink, wink + 4], [0, 1]) * ease(f, [wink + 10, wink + 26], [1, 0])} />
                   </g>

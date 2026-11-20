@@ -4,8 +4,8 @@ import {Layer, Cam} from '../animations/camera';
 import {blinks, ease, keys, osc, outBack} from '../animations/easing';
 import {GiftBox} from '../components/Room';
 import {Plate, IMG, PaintedTree} from '../components/Painted';
-import {Clara} from '../components/Clara';
-import {Nutcracker} from '../components/Nutcracker';
+import {Clara} from '../components/PaintedCast';
+import {Nutcracker} from '../components/PaintedCast';
 import {MagicDust, Twinkle} from '../components/Effects';
 import {range, rnd} from '../animations/particles';
 import T from '../timeline.json';
@@ -33,8 +33,8 @@ export const Scene02Awakening: React.FC<{f: number}> = ({f}) => {
   const headLift = keys(f, [[head, 0], [head + 26, 14]]);
   const arm0 = L(T.cues.armCreak);
   const [c1, c2] = T.cues.armClicks.map(L);
-  const armL = keys(f, [[arm0, 4], [c1, 38], [c1 + 4, 36], [c2, 58], [c2 + 4, 57], [arm0 + 40, 74]]);
-  const elbowL = keys(f, [[arm0, 0], [c2, 4], [arm0 + 42, 16]]);
+  const armL = keys(f, [[arm0, 4], [c1, 38], [c1 + 4, 36], [c2, 50], [c2 + 4, 49], [arm0 + 40, 60]]);
+  const elbowL = keys(f, [[arm0, 0], [c2, 2], [arm0 + 42, 6]]);
   const burst = L(T.cues.magicBurst);
   const alive = ease(f, [burst - 6, burst + 40], [0, 1]);
   const jaw = keys(f, [[burst, 0], [burst + 12, 0.35], [burst + 24, 0.12]]);
@@ -131,8 +131,8 @@ export const Scene02Awakening: React.FC<{f: number}> = ({f}) => {
             blink={blinks(f, [20, 96])}
             brow={keys(f, [[eye1, 0], [eye1 + 10, 1], [clasp + 10, 0.3]])}
             mouth={f < eye1 ? 'smile' : f < clasp + 6 ? 'o' : 'smile'}
-            armR={10 + reach * 106 + after * 4}
-            elbowR={30 - reach * 18}
+            armR={10 + reach * 114 + after * 3}
+            elbowR={30 - reach * 30}
             armL={keys(f, [[eye1, 10], [eye1 + 16, -18], [110, -18], [130, 10]])}
             elbowL={keys(f, [[eye1, 20], [eye1 + 16, -96], [110, -96], [130, 20]])}
             sway={osc(f, 60)}
