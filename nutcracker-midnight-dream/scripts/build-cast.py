@@ -84,3 +84,65 @@ crop('soldier-sheet.png', (1078, 466, 1206, 982), 'soldier-leg')
 for i, box in enumerate([(16, 50, 392, 962), (404, 50, 760, 962), (776, 50, 1150, 962), (1162, 50, 1524, 962)]):
     crop('ballerina-sheet.png', box, f'ballerina-{i}')
 print('cast written to', O, sorted(os.listdir(O)))
+
+# ---------- ballerina costume variants: auto-split into 4 views + toe points ----------
+import json
+
+
+def knock_out_background(im):
+    """Sheets that came back opaque: flood-fill the background from the edges."""
+    from PIL import ImageDraw
+    a = np.asarray(im).copy()
+    if a[..., 3].min() < 250:
+        return im
+    rgb = im.convert('RGB')
+    key = (1, 254, 3)
+    for p in [(0, 0), (im.width - 1, 0), (0, im.height - 1), (im.width - 1, im.height - 1), (im.width // 2, 0), (im.width // 2, im.height - 1)]:
+        ImageDraw.floodfill(rgb, p, key, thresh=26)
+    m = np.all(np.asarray(rgb) == key, -1)
+    soft = np.asarray(Image.fromarray((m * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.2))).astype(np.float32) / 255
+    a[..., 3] = (255 * (1 - soft)).astype(np.uint8)
+    a[m, 3] = 0
+    return Image.fromarray(a)
+
+
+def split_views(sheet):
+    im = knock_out_background(Image.open(S + sheet).convert('RGBA'))
+    arr = np.asarray(im).copy()
+    arr[arr[..., 3] < (200 if np.median(arr[..., 3]) > 60 else 70), 3] = 0  # clear faint background haze
+    im = Image.fromarray(arr)
+    a = arr[..., 3] > 30
+    cols = a.sum(axis=0) > 4
+    runs, x = [], 0
+    while x < len(cols):
+        if cols[x]:
+            s = x
+            while x < len(cols) and cols[x]:
+                x += 1
+            if x - s > 60:
+                runs.append((s, x))
+        x += 1
+    out = []
+    for s, e in runs[:4]:
+        sub = a[:, s:e]
+        rows = np.nonzero(sub.any(axis=1))[0]
+        y0, y1 = rows.min(), rows.max() + 1
+        box = (s - 2, y0 - 2, e + 2, y1 + 2)
+        crop = im.crop(box)
+        ca = np.asarray(crop)[..., 3] > 30
+        # toe = centre of the lowest 12 opaque rows
+        ys, xs = np.nonzero(ca)
+        low = ys >= ys.max() - 12
+        out.append((crop, int(xs[low].mean()), int(ys.max())))
+    return out
+
+
+meta = {}
+for key, sheet in [('pink', 'ballerina-sheet.png'), ('blue', 'ballerina-blue-sheet.png'), ('gold', 'ballerina-gold-sheet.png')]:
+    views = split_views(sheet)
+    meta[key] = []
+    for i, (crop, tx, ty) in enumerate(views):
+        crop.save(O + f'ballerina-{key}-{i}.png')
+        meta[key].append({'w': crop.width, 'h': crop.height, 'toeX': tx, 'toeY': ty})
+json.dump(meta, open('src/components/ballerina-meta.json', 'w'), indent=1)
+print(json.dumps(meta))

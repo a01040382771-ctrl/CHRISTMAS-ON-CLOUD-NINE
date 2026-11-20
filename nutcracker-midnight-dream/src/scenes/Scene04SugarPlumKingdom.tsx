@@ -52,7 +52,7 @@ export const Scene04SugarPlumKingdom: React.FC<{f: number}> = ({f}) => {
         ].map((b) => (
           <g key={b.k} transform={`translate(${b.x + osc(f + b.k * 50, 140, 22)} ${b.y}) scale(${b.s})`}>
             <ellipse cx={0} cy={0} rx={150} ry={34} fill="url(#g-magic)" opacity={0.5} />
-            <Ballerina ph={spin(b.k)} tutu={b.tutu} tutuDeep={b.deep} hairColor={b.hair} />
+            <Ballerina ph={spin(b.k)} variant={(['blue', 'pink', 'gold'] as const)[b.k]} />
           </g>
         ))}
       </Layer>

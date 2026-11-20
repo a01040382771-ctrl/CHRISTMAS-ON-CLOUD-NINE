@@ -55,11 +55,11 @@ export const Scene05LastMagic: React.FC<{f: number}> = ({f}) => {
             headTilt={keys(f, [[0, -16], [wake, -16], [wake + 30, -4]]) + osc(f, 90, 1.5) * (1 - headUp)}
             headY={headUp * 6}
             mouth={eyesOpen < 0.5 ? 'sleep' : f > wink + 4 ? 'o' : 'smile'}
-            brow={f > wink + 4 ? 1 : 0.2}
+            brow={ease(f, [wink + 2, wink + 12], [0.2, 1])}
             armL={8}
-            elbowL={-46}
+            elbowL={-54}
             armR={8}
-            elbowR={-44}
+            elbowR={-52}
             sway={osc(f, 80) * 0.5}
             breathe={osc(f, eyesOpen < 0.5 ? 100 : 70)}
             hug={

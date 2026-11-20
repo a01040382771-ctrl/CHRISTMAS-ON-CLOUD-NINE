@@ -3,6 +3,7 @@ import {staticFile} from 'remotion';
 import {C} from '../styles/palette';
 import type {ClaraPose} from './Clara';
 import type {NutPose} from './Nutcracker';
+import BALLERINA_META from './ballerina-meta.json';
 
 /**
  * The cast as hand-painted gouache paper puppets.
@@ -137,31 +138,57 @@ const ClaraArm: React.FC<{side: -1 | 1; a: number; e: number; at: {x: number; y:
   );
 };
 
+const smoothstep = (a: number, b: number, v: number) => {
+  const t = clamp01((v - a) / (b - a));
+  return t * t * (3 - 2 * t);
+};
+
 export const Clara: React.FC<ClaraPose> = (p) => {
   const body = CL[p.pose ?? 'stand'];
-  const closed = p.asleep || (p.blink ?? 0) > 0.5;
-  const wonder = !closed && (p.mouth === 'o' || (p.brow ?? 0) > 0.6);
-  const head = closed ? CL_HEAD.sleep : wonder ? CL_HEAD.wonder : CL_HEAD.open;
-  const rib = closed ? CL_HEAD.ribSleep : wonder ? CL_HEAD.ribWonder : CL_HEAD.ribOpen;
-  const br = (p.breathe ?? 0) * 3;
+  // expressions cross-fade instead of snapping: eyes close over a few frames,
+  // wonder grows with the raised brow
+  const closedW = p.blink === undefined ? (p.asleep ? 1 : 0) : smoothstep(0.2, 0.8, p.blink);
+  const wonderW = smoothstep(0.35, 0.85, p.brow ?? 0) * (1 - closedW);
+  const br = p.breathe ?? 0;
   const sway = p.sway ?? 0;
-  const headX = (p.gazeX ?? 0) * 4;
+  const armL = p.armL ?? 8;
+  const armR = p.armR ?? 8;
+  // the body leans a little into a reach and shifts weight as she breathes
+  const lean = Math.max(-4, Math.min(4, ((armR - armL) / 120) * 3)) + br * 0.5;
+  const shrug = (a: number) => smoothstep(30, 110, a) * 12;
+  const headTilt = (p.headTilt ?? 0) + lean * 0.7 + (p.gazeX ?? 0) * 2;
+  const headX = (p.gazeX ?? 0) * 5;
+  const lift = br * 4;
+  const heads: Array<[Part, Part, number]> = [
+    [CL_HEAD.open, CL_HEAD.ribOpen, 1],
+    [CL_HEAD.wonder, CL_HEAD.ribWonder, wonderW],
+    [CL_HEAD.sleep, CL_HEAD.ribSleep, closedW],
+  ];
   return (
     <g transform={`scale(${CL_K}) translate(${-body.base.x} ${-body.base.y})`}>
-      <ClaraArm side={-1} a={p.armL ?? 8} e={p.elbowL ?? 6} at={{x: body.l.x, y: body.l.y + br}} />
-      {/* neck */}
-      <path d={`M ${body.neck.x - 12} ${body.neck.y + 6} L ${body.neck.x - 10} ${body.neck.y - 30} L ${body.neck.x + 10} ${body.neck.y - 30} L ${body.neck.x + 12} ${body.neck.y + 6} Z`} fill="#D8A88B" />
-      <g transform={`translate(0 ${br * 0.5})`}>
-        <Img p={body.p} />
-      </g>
-      {p.hug && <g transform={`scale(${1 / CL_K}) translate(${body.base.x * CL_K} ${body.base.y * CL_K})`}>{p.hug}</g>}
-      <Hinge x={body.neck.x + headX} y={body.neck.y - 6 - (p.headY ?? 0) / CL_K + br * 0.3} px={CL_CHIN.x} py={CL_CHIN.y} deg={p.headTilt ?? 0} s={CL_HEAD_S}>
-        <Img p={head} />
-        <Hinge x={CL_KNOT.x} y={CL_KNOT.y} px={CL_KNOT.x} py={CL_KNOT.y} deg={sway * 5}>
-          <Img p={rib} />
+      <g transform={`rotate(${lean} ${body.base.x} ${body.base.y})`}>
+        <ClaraArm side={-1} a={armL} e={(p.elbowL ?? 6) + 4} at={{x: body.l.x, y: body.l.y - lift - shrug(armL)}} />
+        {/* neck */}
+        <path d={`M ${body.neck.x - 12} ${body.neck.y + 6} L ${body.neck.x - 9} ${body.neck.y - 14} Q ${body.neck.x} ${body.neck.y - 18} ${body.neck.x + 9} ${body.neck.y - 14} L ${body.neck.x + 12} ${body.neck.y + 6} Z`} fill="#D3A184" />
+        {/* breathing: the chest rises, the hem stays on the floor */}
+        <g transform={`translate(0 ${body.base.y}) scale(${1 + br * 0.004} ${1 + br * 0.008}) translate(0 ${-body.base.y})`}>
+          <Img p={body.p} />
+        </g>
+        {p.hug && <g transform={`rotate(${-lean} ${body.base.x} ${body.base.y}) scale(${1 / CL_K}) translate(${body.base.x * CL_K} ${body.base.y * CL_K})`}>{p.hug}</g>}
+        <Hinge x={body.neck.x + headX} y={body.neck.y + 6 - (p.headY ?? 0) / CL_K - lift} px={CL_CHIN.x} py={CL_CHIN.y} deg={headTilt} s={CL_HEAD_S}>
+          {heads.map(([h, r, w], i) =>
+            w > 0.01 ? (
+              <g key={i} opacity={i === 0 ? 1 : w}>
+                <Img p={h} />
+                <Hinge x={CL_KNOT.x} y={CL_KNOT.y} px={CL_KNOT.x} py={CL_KNOT.y} deg={sway * 5 - lean * 1.5}>
+                  <Img p={r} />
+                </Hinge>
+              </g>
+            ) : null,
+          )}
         </Hinge>
-      </Hinge>
-      <ClaraArm side={1} a={p.armR ?? 8} e={p.elbowR ?? 6} at={{x: body.r.x, y: body.r.y + br}} />
+        <ClaraArm side={1} a={armR} e={(p.elbowR ?? 6) + 4} at={{x: body.r.x, y: body.r.y - lift - shrug(armR)}} />
+      </g>
     </g>
   );
 };
@@ -190,7 +217,10 @@ export const ToySoldier: React.FC<{step: number; drum?: boolean; marching?: bool
       <Hinge x={b.hips[1]} y={b.hipY} px={LEG_TOP.x} py={LEG_TOP.y} deg={-swing}>
         <Img p={SOLDIER.leg} />
       </Hinge>
-      <g transform={drum ? `translate(0 ${-Math.max(0, Math.sin(ph * 2)) * 8})` : undefined}>
+      {/* the wooden body rocks from foot to foot and settles on each step */}
+      <g
+        transform={`rotate(${marching ? Math.sin(ph) * 3.5 : 0} ${midX} ${b.hipY}) translate(0 ${drum ? -Math.max(0, Math.sin(ph * 2)) * 8 : 0}) translate(${midX} ${b.hipY}) scale(1 ${1 - (marching ? Math.abs(Math.sin(ph)) * 0.02 : 0)}) translate(${-midX} ${-b.hipY})`}
+      >
         <Img p={b.p} />
       </g>
     </g>
@@ -198,30 +228,27 @@ export const ToySoldier: React.FC<{step: number; drum?: boolean; marching?: bool
 };
 
 // ---------------------------------------------------------------- ballerina
-const BAL = [
-  {p: P('ballerina-0', 376, 912), toe: 189},
-  {p: P('ballerina-1', 356, 912), toe: 166},
-  {p: P('ballerina-2', 374, 912), toe: 187},
-  {p: P('ballerina-3', 362, 912), toe: 176},
-];
-const BAL_TOE_Y = 905;
+
+export type BallerinaVariant = 'pink' | 'blue' | 'gold';
 const BAL_K = 420 / 905;
 
-/** Pirouette from the painted 4-view turnaround. `ph` = turn angle (rad). */
-export const Ballerina: React.FC<{ph: number; tutu?: string; tutuDeep?: string; hairColor?: string}> = ({ph}) => {
+/** Pirouette from a painted 4-view turnaround. `ph` = turn angle (rad). */
+export const Ballerina: React.FC<{ph: number; variant?: BallerinaVariant}> = ({ph, variant = 'pink'}) => {
+  const views = BALLERINA_META[variant].map((m, i) => ({p: P(`ballerina-${variant}-${i}`, m.w, m.h), toeX: m.toeX, toeY: m.toeY}));
   const turns = ((ph / (Math.PI * 2)) % 1 + 1) % 1;
   const q = turns * 4;
   const i = Math.floor(q);
   const frac = q - i;
-  const mix = clamp01((frac - 0.55) / 0.35); // hold each view, then turn quickly into the next
-  const a = BAL[i];
-  const b = BAL[(i + 1) % 4];
-  const squeeze = 1 - Math.sin(mix * Math.PI) * 0.12;
+  const mix = smoothstep(0.4, 0.95, frac); // hold each view, then turn into the next
+  const a = views[i];
+  const b = views[(i + 1) % 4];
+  const squeeze = 1 - Math.sin(mix * Math.PI) * 0.1;
+  const rise = Math.sin(mix * Math.PI) * 10; // a little lift through each quarter turn
   return (
-    <g transform={`scale(${BAL_K * squeeze} ${BAL_K})`}>
-      <ellipse cx={0} cy={0} rx={150} ry={26} fill="rgba(120,60,80,0.22)" />
-      <Img p={a.p} x={-a.toe} y={-BAL_TOE_Y} opacity={1 - mix} />
-      {mix > 0 && <Img p={b.p} x={-b.toe} y={-BAL_TOE_Y} opacity={mix} />}
+    <g transform={`translate(0 ${-rise}) scale(${BAL_K * squeeze} ${BAL_K})`}>
+      <ellipse cx={0} cy={rise / BAL_K} rx={150} ry={26} fill="rgba(120,60,80,0.22)" />
+      <Img p={a.p} x={-a.toeX} y={-a.toeY} opacity={1 - mix} />
+      {mix > 0 && <Img p={b.p} x={-b.toeX} y={-b.toeY} opacity={mix} />}
     </g>
   );
 };
